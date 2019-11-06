@@ -4,7 +4,7 @@
  * @brief Clase que implementa la funcionalidad de procesar mensajes
  *
  * Partiendo del codigo de jjramos
-// (CC) jjramos, 2012
+ * (CC) jjramos, 2012
  * */
 
 import java.io.IOException;
@@ -15,10 +15,19 @@ import java.util.Random;
 
 
 /**
+ * Clase que representa un procesador de textos que convierte texto normal en 
+ * texto al estilo Yoda
+ *
+ * @author Sergio Quijano Rey
+ *
+ * A partir del codigo de jjramos
+ *
  * Nota: si esta clase extendiera la clase Thread, y el procesamiento lo hiciera el método "run()",
  * ¡Podríamos realizar un procesado concurrente! 
 */
 public class ProcesadorYodafy {
+    // Atributos de la clase
+    //==========================================================================
 	// Referencia a un socket para enviar/recibir las peticiones/respuestas
 	private Socket socketServicio;
 	// stream de lectura (por aquí se recibe lo que envía el cliente)
@@ -29,14 +38,25 @@ public class ProcesadorYodafy {
 	// Para que la respuesta sea siempre diferente, usamos un generador de números aleatorios.
 	private Random random;
 	
-	// Constructor que tiene como parámetro una referencia al socket abierto en por otra clase
+    // Constructores
+    //==========================================================================
+    /**
+     * Constructor de la clase
+     * @param socketServicio referencia la socket abierto por otra clase
+     * */
 	public ProcesadorYodafy(Socket socketServicio) {
 		this.socketServicio=socketServicio;
 		random=new Random();
 	}
 	
+    // Metodos de la clase
+    //==========================================================================
 	
-	// Aquí es donde se realiza el procesamiento realmente:
+    /**
+     * Metodo que realiza el procesamiento 
+     *
+     * TODO especificar que es lo que esta haciendo este metodo
+     * */
 	void procesa(){
 		
 		// Como máximo leeremos un bloque de 1024 bytes. Esto se puede modificar.
@@ -53,9 +73,7 @@ public class ProcesadorYodafy {
 			outputStream=socketServicio.getOutputStream();
 			
 			// Lee la frase a Yodaficar:
-			////////////////////////////////////////////////////////
-			// read ... datosRecibidos.. (Completar)
-			////////////////////////////////////////////////////////
+            bytesRecibidos = inputStream.read(datosRecibidos);
 			
 			// Yoda hace su magia:
 			// Creamos un String a partir de un array de bytes de tamaño "bytesRecibidos":
@@ -66,19 +84,18 @@ public class ProcesadorYodafy {
 			datosEnviar=respuesta.getBytes();
 			
 			// Enviamos la traducción de Yoda:
-			////////////////////////////////////////////////////////
-			// ... write ... datosEnviar... datosEnviar.length ... (Completar)
-			////////////////////////////////////////////////////////
-			
-			
-			
+            outputStream.write(datosEnviar, 0, datosEnviar.length); 
+
 		} catch (IOException e) {
 			System.err.println("Error al obtener los flujso de entrada/salida.");
 		}
-
 	}
 
-	// Yoda interpreta una frase y la devuelve en su "dialecto":
+    /**
+     * Se convierte una cadena de texto en dialecto normal a dialecto de Yoda
+     * @param peticion string con la cadena en dialecto normal
+     * @return string con la cadena en dialecto yoda
+     * */
 	private String yodaDo(String peticion) {
 		// Desordenamos las palabras:
 		String[] s = peticion.split(" ");
