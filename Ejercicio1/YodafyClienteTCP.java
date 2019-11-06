@@ -1,7 +1,12 @@
-//
-// YodafyServidorIterativo
-// (CC) jjramos, 2012
-//
+/**
+ * @file YodafyClienteTCP.java
+ * @author Sergio Quijano Rey
+ * @brief Cliente TCP para el procesador
+ *
+ * A partir del codigo de jjramos
+ * (CC) jjramos, 2012
+ * */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,14 +23,10 @@ public class YodafyClienteTCP {
 		byte []buferEnvio;
 		byte []buferRecepcion=new byte[256];
 		int bytesLeidos=0;
-		
-		// Nombre del host donde se ejecuta el servidor:
-		String host="localhost";
-		// Puerto en el que espera el servidor:
-		int port=8989;
-		
-		// Socket para la conexión TCP
-		Socket socketServicio=null;
+
+		String host="localhost"; //> Nombre del host donde se ejecuta el servidor:
+		int port=8989; //> Puerto en el que espera el servidor:
+		Socket socketServicio=null; //> Socket para la conexión TCP
 		
 		try {
 			// Creamos un socket que se conecte a "hist" y "port":
