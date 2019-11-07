@@ -13,6 +13,10 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Random;
 
+// Para usar las nuevas clases
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.io.InputStreamReader;
 
 /**
  * Clase que representa un procesador de textos que convierte texto normal en 
@@ -59,32 +63,25 @@ public class ProcesadorYodafy {
      * */
 	void procesa(){
 		
-		// Como máximo leeremos un bloque de 1024 bytes. Esto se puede modificar.
-		byte [] datosRecibidos=new byte[1024];
-		int bytesRecibidos=0;
-		
-		// Array de bytes para enviar la respuesta. Podemos reservar memoria cuando vayamos a enviarka:
-		byte [] datosEnviar;
+        // Strings para recibir el mensaje y guardar los datos procesados
+        String datosRecibidos;
+        String datosEnviar;
 		
 		
 		try {
-			// Obtiene los flujos de escritura/lectura
-			inputStream=socketServicio.getInputStream();
-			outputStream=socketServicio.getOutputStream();
+            // Flujos de lectura y escritura con las clases del ejercicio 2
+            PrintWriter outPrinter = new PrintWriter(socketServicio.getOutputStream(),true);        
+            BufferedReader inReader = new BufferedReader(new InputStreamReader(socketServicio.getInputStream()));
 			
 			// Lee la frase a Yodaficar:
-            bytesRecibidos = inputStream.read(datosRecibidos);
+            datosRecibidos = inReader.readLine();
 			
 			// Yoda hace su magia:
-			// Creamos un String a partir de un array de bytes de tamaño "bytesRecibidos":
-			String peticion=new String(datosRecibidos,0,bytesRecibidos);
 			// Yoda reinterpreta el mensaje:
-			String respuesta=yodaDo(peticion);
-			// Convertimos el String de respuesta en una array de bytes:
-			datosEnviar=respuesta.getBytes();
+			String respuesta=yodaDo(datosRecibidos);
 			
 			// Enviamos la traducción de Yoda:
-            outputStream.write(datosEnviar, 0, datosEnviar.length); 
+            outPrinter.println(respuesta);
 
 		} catch (IOException e) {
 			System.err.println("Error al obtener los flujso de entrada/salida.");
