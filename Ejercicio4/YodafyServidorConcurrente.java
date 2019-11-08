@@ -1,7 +1,7 @@
 /**
  * @file YodafyServidorConcurrente.java
  * @author Sergio Quijano Rey
- * @brief Servidor Iterativo
+ * @brief Servidor concurrente que usa UDP
  *
  * A partir del codigo de jjramos
  * (CC) jjramos, 2012
@@ -12,38 +12,48 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+// Para el uso de UDP
+import java.net.InetAddress;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
+
 public class YodafyServidorConcurrente {
 
 	public static void main(String[] args) {
 		int port=8989;                  //> Puerto de escucha
 		byte []buffer=new byte[256];    //> array de bytes auxiliar para recibir o enviar datos.
 		int bytesLeidos=0;              //> Numero de bytes leidos
-        ServerSocket socketServidor;    //> Shocket TCP para el servidor, abierto en modo pasivo
-        Socket socketServicio;          //> Shocket de cada conexion que se establece
+        
+        // Para la conexion UDP
+        InetAddress direccion;
+        DatagramPacket paquete;
+        DatagramSocket socketServidor;
 		
 		try {
-            socketServidor = new ServerSocket(port);
-			
-			do {
-                socketServicio = null;
-                try{
-                    socketServicio = socketServidor.accept();
-                }catch(IOException e){
-                    System.err.println("Error al aceptar una peticion de conexion");
-                }
+            // Abro el socket UDP
+            socketServidor = new DatagramSocket(port);
 
+            // Recibo constantemente los mensajes por UDP
+            do{
+                // Se recibe un paquete con la peticion
+                paquete = new DatagramPacket(buffer, buffer.length);
+                socketServidor.receive(paquete);
+                paquete.getData();
+                paquete.getAddress();
+                paquete.getPort();
+
+                // Se muestra que se ha recibido la peticion
                 System.out.println("Peticion de procesamiento recibida!");
 
-				
-				// Creamos un objeto de la clase ProcesadorYodafy, pasándole como 
-				// argumento el nuevo socket, para que realice el procesamiento
-				// Este esquema permite que se puedan usar hebras más fácilmente.
-                // Usamos `.start()` para que se lance la hebra concurrente
-				ProcesadorYodafy procesador=new ProcesadorYodafy(socketServicio);
-				procesador.start();
-				
-			} while (true);
-			
+                // Creo el socket servicio
+                DatagramSocket socketServicio = new DatagramSocket(paquete.getPort());
+                
+                // Creamos el objeto de la clase ProcesadorYodafy sobre el socket servicio? 
+                ProcesadorYodafy procesador = new ProcesadorYodafy(socketServicio);
+                procesador.start();
+
+            }while(true);
+
 		} catch (IOException e) {
 			System.err.println("Error al escuchar en el puerto "+port);
 		}

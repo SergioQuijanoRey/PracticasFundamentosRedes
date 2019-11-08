@@ -15,6 +15,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.net.InetAddress;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
 
 public class YodafyClienteUDP {
 

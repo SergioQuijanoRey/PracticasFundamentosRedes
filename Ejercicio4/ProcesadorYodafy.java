@@ -18,22 +18,24 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 
+// Para el uso de UDP
+import java.net.InetAddress;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
+
 /**
  * Clase que representa un procesador de textos que convierte texto normal en 
- * texto al estilo Yoda
+ * texto al estilo Yoda, usando UDP
  *
  * @author Sergio Quijano Rey
  *
  * A partir del codigo de jjramos
- *
- * Nota: si esta clase extendiera la clase Thread, y el procesamiento lo hiciera el método "run()",
- * ¡Podríamos realizar un procesado concurrente! 
 */
 public class ProcesadorYodafy extends Thread{
     // Atributos de la clase
     //==========================================================================
 	// Referencia a un socket para enviar/recibir las peticiones/respuestas
-	private Socket socketServicio;
+	private DatagramSocket socketServicio;
 	// stream de lectura (por aquí se recibe lo que envía el cliente)
 	private InputStream inputStream;
 	// stream de escritura (por aquí se envía los datos al cliente)
@@ -48,7 +50,7 @@ public class ProcesadorYodafy extends Thread{
      * Constructor de la clase
      * @param socketServicio referencia la socket abierto por otra clase
      * */
-	public ProcesadorYodafy(Socket socketServicio) {
+	public ProcesadorYodafy(DatagramSocket socketServicio) {
 		this.socketServicio=socketServicio;
 		random=new Random();
 	}
@@ -58,6 +60,7 @@ public class ProcesadorYodafy extends Thread{
 	
     /**
      * Metodo que realiza el procesamiento 
+     * TODO usar los metodos UDP
      * */
     @Override
 	public void run(){
