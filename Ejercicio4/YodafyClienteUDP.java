@@ -71,7 +71,7 @@ public class YodafyClienteUDP {
 			}
             System.out.println();
 
-			// Excepciones:
+		// Excepciones:
 		} catch (UnknownHostException e) {
 			System.err.println("Error: Nombre de host no encontrado.");
 		} catch (IOException e) {
