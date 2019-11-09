@@ -35,7 +35,8 @@ public class ProcesadorYodafy extends Thread{
     // Atributos de la clase
     //==========================================================================
 	// Referencia a un socket para enviar/recibir las peticiones/respuestas
-	private DatagramSocket socketServicio;
+	private DatagramPacket paquete;
+    private DatagramSocket socketServicio;
 	
 	// Para que la respuesta sea siempre diferente, usamos un generador de números aleatorios.
 	private Random random;
@@ -46,8 +47,19 @@ public class ProcesadorYodafy extends Thread{
      * Constructor de la clase
      * @param socketServicio referencia la socket abierto por otra clase
      * */
-	public ProcesadorYodafy(DatagramSocket socketServicio) {
-		this.socketServicio=socketServicio;
+	public ProcesadorYodafy(DatagramPacket paquete) {
+        // El servidor pasa al procesador un paquete
+        this.paquete = paquete;
+
+        // Con la informacion del paquete creamos un socket 
+        try{
+            this.socketServicio = new DatagramSocket(paquete.getPort(), paquete.getAddress());
+        } catch(Exception e){
+            System.out.println("Error creando un socket en el procesador a partir del paquete dado por el servidor");
+            System.out.println("Error sobre el puerto " + paquete.getPort());
+        }
+
+        // Para mezclar las palabras
 		random=new Random();
 	}
 	
@@ -69,26 +81,19 @@ public class ProcesadorYodafy extends Thread{
 		
 		
 		try {
-			// Lee la frase a Yodaficar:
-            DatagramPacket paquete = new DatagramPacket(datosRecibidos, datosRecibidos.length);
-            socketServicio.receive(paquete);
-            paquete.getData();
-            paquete.getAddress();
-            paquete.getPort();
 
-			
 			// Yoda hace su magia:
-			// Creamos un String a partir de un array de bytes de tamaño "bytesRecibidos":
-			String peticion=new String(datosRecibidos,0,bytesRecibidos);
+			// Creamos un String a partir de la informacion del paquete
+			String peticion=new String(paquete.getData());
 			// Yoda reinterpreta el mensaje:
 			String respuesta=yodaDo(peticion);
 			// Convertimos el String de respuesta en una array de bytes:
 			datosEnviar=respuesta.getBytes();
 			
-			// Enviamos la traducción de Yoda:
-            // TODO --> posible bug en el envio del paquete con el paquete.getPort
-            InetAddress direccion = InetAddress.getByName("localhost");
-            DatagramPacket paqueteEnvio = new DatagramPacket(datosEnviar, datosEnviar.length, direccion, paquete.getPort());
+			// Creamos el paquete con el nuevo mensaje -- TODO crear paquete
+            DatagramPacket paqueteEnvio = new DatagramPacket(datosEnviar, datosEnviar.length, paquete.getAddress(), paquete.getPort());
+
+            // Enviamos el paquete
             socketServicio.send(paqueteEnvio);
 
             // Cerramos el socket

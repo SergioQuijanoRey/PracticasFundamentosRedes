@@ -54,8 +54,6 @@ public class ProcesadorYodafy {
 	
     /**
      * Metodo que realiza el procesamiento 
-     *
-     * TODO especificar que es lo que esta haciendo este metodo
      * */
 	void procesa(){
 		

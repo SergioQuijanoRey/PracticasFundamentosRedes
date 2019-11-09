@@ -22,16 +22,20 @@ import java.net.DatagramPacket;
 public class YodafyClienteUDP {
 
 	public static void main(String[] args) {
+        // Para manejar textos
 		byte []buferEnvio;
 		byte []buferRecepcion=new byte[256];
 		int bytesLeidos=0;
-		String host="localhost"; //> Nombre del host donde se ejecuta el servidor:
-		int port=8989; //> Puerto en el que espera el servidor:
+
+        // Informarcion sobre el servidor
+		String host="localhost";    //> Nombre del host donde se ejecuta el servidor:
+		int port=8989;              //> Puerto en el que espera el servidor:
 
 
         // Para la conexion UDP
         InetAddress direccion;
         DatagramPacket paquete;
+        DatagramPacket paqueteRecibido;
         DatagramSocket socket;
 		
 		try {
@@ -47,29 +51,20 @@ public class YodafyClienteUDP {
             paquete = new DatagramPacket(buferEnvio, buferEnvio.length, direccion, port);
             socket.send(paquete); 
 
-            // Cerramos el socket
-            socket.close();
-
-            // Abrimos de nuevo la conexion para recibir mensajes
-            socket = new DatagramSocket();
-            direccion = InetAddress.getByName(host);
-
             // Recibimos el paquete
-            paquete = new DatagramPacket(buferRecepcion, buferRecepcion.length);
-            socket.receive(paquete);
-            paquete.getData();
-            paquete.getAddress();
-            paquete.getPort();
-
-            // Cerramos la conexion
-            socket.close();
+            paqueteRecibido = new DatagramPacket(buferRecepcion, buferRecepcion.length);
+            socket.receive(paqueteRecibido);
+            String stringRecibido = new String(paquete.getData());
+            // paquete.getAddress(); --> no sirve ahora para nada
+            // paquete.getPort(); --> no sirve ahora para nada
 
             // Mostramos la cadena de datos recibida
 			System.out.println("Recibido: ");
-			for(int i=0;i<bytesLeidos;i++){
-				System.out.print((char)buferRecepcion[i]);
-			}
+            System.out.println(stringRecibido);
             System.out.println();
+
+            // Cerramos la conexion
+            socket.close();
 
 		// Excepciones:
 		} catch (UnknownHostException e) {
