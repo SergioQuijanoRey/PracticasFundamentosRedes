@@ -36,9 +36,12 @@ public class YodafyClienteUDP {
         DatagramSocket socket;
         InetAddress direccion;
         DatagramPacket paquete;
+        DatagramPacket inPaquete;
 
 		try {
-            
+            // Envio de mensaje
+            //==================================================================
+
             // Nos conectamos al servidor
             socket = new DatagramSocket();
             direccion = InetAddress.getByName(host);
@@ -51,6 +54,21 @@ public class YodafyClienteUDP {
 
             // Enviamos el paquete por el socket
             socket.send(paquete);
+
+            // Recepcion del mensaje procesado
+            //==================================================================
+
+            // TODO --> no se si asi se reciben los paquetes
+            inPaquete = new DatagramPacket(buferRecepcion, buferRecepcion.length);
+            socket.receive(paquete);
+            paquete.getData();
+
+            // Se muestra un mensaje por pantalla
+			System.out.println("Recibido: ");
+			for(int i=0;i<bytesLeidos;i++){
+				System.out.print((char)buferRecepcion[i]);
+			}
+            System.out.println();
     
 			// Una vez terminado el servicio, cerramos el socket 
             socket.close();

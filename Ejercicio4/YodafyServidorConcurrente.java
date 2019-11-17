@@ -11,41 +11,48 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
 
 public class YodafyServidorConcurrente {
 
 	public static void main(String[] args) {
+
+        // Informacion del servidor
 		int port=8989;                  //> Puerto de escucha
+
+        // Recepcion del mensaje
 		byte []buffer=new byte[256];    //> array de bytes auxiliar para recibir o enviar datos.
 		int bytesLeidos=0;              //> Numero de bytes leidos
-        ServerSocket socketServidor;    //> Shocket TCP para el servidor, abierto en modo pasivo
-        Socket socketServicio;          //> Shocket de cada conexion que se establece
-		
-		try {
-            socketServidor = new ServerSocket(port);
-			
-			do {
-                socketServicio = null;
-                try{
-                    socketServicio = socketServidor.accept();
-                }catch(IOException e){
-                    System.err.println("Error al aceptar una peticion de conexion");
-                }
 
-                System.out.println("Peticion de procesamiento recibida!");
+        // Conexion UDP
+        DatagramSocket socketServidor;
+        DatagramSocket socketServicio;
+        DatagramPacket paquete;
 
-				
-				// Creamos un objeto de la clase ProcesadorYodafy, pasándole como 
-				// argumento el nuevo socket, para que realice el procesamiento
-				// Este esquema permite que se puedan usar hebras más fácilmente.
-                // Usamos `.start()` para que se lance la hebra concurrente
-				ProcesadorYodafy procesador=new ProcesadorYodafy(socketServicio);
-				procesador.start();
-				
-			} while (true);
-			
-		} catch (IOException e) {
-			System.err.println("Error al escuchar en el puerto "+port);
-		}
+        // Conexion
+        try{
+            do{
+                
+                // Creamos una conexion UDP
+                socketServicio = new DatagramSocket(port);
+
+                // Esperamos a leer un paquete
+                paquete = new DatagramPacket(buffer, buffer.length);
+                socketServidor.receive(paquete);
+
+                // Mostramos un mensaje por pantalla
+                System.out.println("Paquete recibido en el servidor!");
+
+                // Creamos un objeto de la clase ProcesadorYodafy pasandole el paquete leido
+                ProcesadorYodafy procesador = new ProcesadorYodafy(paquete);
+                procesador.start();
+
+            }while(true);
+
+          // Excepciones
+        } catch (IOException e){
+            System.err.println("Error al escuchar en el puerto " + port);
+        }
 	}
 }
