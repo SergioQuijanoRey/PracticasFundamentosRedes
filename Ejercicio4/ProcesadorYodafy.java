@@ -18,6 +18,10 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 
+// Conexion UDP
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+
 /**
  * Clase que representa un procesador de textos que convierte texto normal en 
  * texto al estilo Yoda
@@ -26,18 +30,12 @@ import java.io.InputStreamReader;
  *
  * A partir del codigo de jjramos
  *
- * Nota: si esta clase extendiera la clase Thread, y el procesamiento lo hiciera el método "run()",
- * ¡Podríamos realizar un procesado concurrente! 
 */
 public class ProcesadorYodafy extends Thread{
     // Atributos de la clase
     //==========================================================================
-	// Referencia a un socket para enviar/recibir las peticiones/respuestas
-	private Socket socketServicio;
-	// stream de lectura (por aquí se recibe lo que envía el cliente)
-	private InputStream inputStream;
-	// stream de escritura (por aquí se envía los datos al cliente)
-	private OutputStream outputStream;
+    // Paquete que nos pasa el servidor
+    DatagramPacket paquete;
 	
 	// Para que la respuesta sea siempre diferente, usamos un generador de números aleatorios.
 	private Random random;
@@ -46,10 +44,10 @@ public class ProcesadorYodafy extends Thread{
     //==========================================================================
     /**
      * Constructor de la clase
-     * @param socketServicio referencia la socket abierto por otra clase
+     * @param paquete paquete que nos pasa el servidor con el mensaje
      * */
-	public ProcesadorYodafy(Socket socketServicio) {
-		this.socketServicio=socketServicio;
+	public ProcesadorYodafy(DatagramPacket paquete) {
+        this.paquete = paquete;
 		random=new Random();
 	}
 	
@@ -68,19 +66,48 @@ public class ProcesadorYodafy extends Thread{
 		
 		
 		try {
-            // Flujos de lectura y escritura con las clases del ejercicio 2
-            PrintWriter outPrinter = new PrintWriter(socketServicio.getOutputStream(),true);        
-            BufferedReader inReader = new BufferedReader(new InputStreamReader(socketServicio.getInputStream()));
-			
-			// Lee la frase a Yodaficar:
-            datosRecibidos = inReader.readLine();
-			
-			// Yoda hace su magia:
-			// Yoda reinterpreta el mensaje:
-			String respuesta=yodaDo(datosRecibidos);
-			
-			// Enviamos la traducción de Yoda:
-            outPrinter.println(respuesta);
+            
+            // Leemos el mensaje del paquete
+            //==================================================================
+            byte []buffer = new byte[256];
+            int leidos = 0;
+            buffer = paquete.getData();
+
+            // Procesamos el mensaje
+            //==================================================================
+
+            // Convertimos el buffer a un string
+            String datos = new String(buffer);
+
+            // Convertimos el mensaje
+            String respuesta = yodaDo(datos);
+
+            // Mostramos el mensaje
+            System.out.println("El mensaje procesado es: " + respuesta);
+            
+            // Enviamos el mensaje --> TODO
+            //==================================================================
+
+            // Creamos el socket
+            DatagramSocket socket = new DatagramSocket();
+            
+            // Generamos el paquete
+
+            
+
+            // // Flujos de lectura y escritura con las clases del ejercicio 2
+            // PrintWriter outPrinter = new PrintWriter(socketServicio.getOutputStream(),true);        
+            // BufferedReader inReader = new BufferedReader(new InputStreamReader(socketServicio.getInputStream()));
+			// 
+			// // Lee la frase a Yodaficar:
+            // datosRecibidos = inReader.readLine();
+			// 
+			// // Yoda hace su magia:
+			// // Yoda reinterpreta el mensaje:
+			// String respuesta=yodaDo(datosRecibidos);
+			// 
+			// // Enviamos la traducción de Yoda:
+            // outPrinter.println(respuesta);
 
 		} catch (IOException e) {
 			System.err.println("Error al obtener los flujso de entrada/salida.");
