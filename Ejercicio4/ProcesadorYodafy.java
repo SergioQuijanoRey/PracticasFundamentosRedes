@@ -18,25 +18,26 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 
-// Para el uso de UDP
-import java.net.InetAddress;
-import java.net.DatagramSocket;
-import java.net.DatagramPacket;
-
 /**
  * Clase que representa un procesador de textos que convierte texto normal en 
- * texto al estilo Yoda, usando UDP
+ * texto al estilo Yoda
  *
  * @author Sergio Quijano Rey
  *
  * A partir del codigo de jjramos
+ *
+ * Nota: si esta clase extendiera la clase Thread, y el procesamiento lo hiciera el método "run()",
+ * ¡Podríamos realizar un procesado concurrente! 
 */
 public class ProcesadorYodafy extends Thread{
     // Atributos de la clase
     //==========================================================================
 	// Referencia a un socket para enviar/recibir las peticiones/respuestas
-	private DatagramPacket paquete;
-    private DatagramSocket socketServicio;
+	private Socket socketServicio;
+	// stream de lectura (por aquí se recibe lo que envía el cliente)
+	private InputStream inputStream;
+	// stream de escritura (por aquí se envía los datos al cliente)
+	private OutputStream outputStream;
 	
 	// Para que la respuesta sea siempre diferente, usamos un generador de números aleatorios.
 	private Random random;
@@ -47,19 +48,8 @@ public class ProcesadorYodafy extends Thread{
      * Constructor de la clase
      * @param socketServicio referencia la socket abierto por otra clase
      * */
-	public ProcesadorYodafy(DatagramPacket paquete) {
-        // El servidor pasa al procesador un paquete
-        this.paquete = paquete;
-
-        // Con la informacion del paquete creamos un socket 
-        try{
-            this.socketServicio = new DatagramSocket(paquete.getPort(), paquete.getAddress());
-        } catch(Exception e){
-            System.out.println("Error creando un socket en el procesador a partir del paquete dado por el servidor");
-            System.out.println("Error sobre el puerto " + paquete.getPort());
-        }
-
-        // Para mezclar las palabras
+	public ProcesadorYodafy(Socket socketServicio) {
+		this.socketServicio=socketServicio;
 		random=new Random();
 	}
 	
@@ -71,35 +61,27 @@ public class ProcesadorYodafy extends Thread{
      * */
     @Override
 	public void run(){
-
-		// Como máximo leeremos un bloque de 1024 bytes. Esto se puede modificar.
-		byte [] datosRecibidos=new byte[1024];
-		int bytesRecibidos=0;
 		
-		// Array de bytes para enviar la respuesta. Podemos reservar memoria cuando vayamos a enviarka:
-		byte [] datosEnviar;
+        // Strings para recibir el mensaje y guardar los datos procesados
+        String datosRecibidos;
+        String datosEnviar;
 		
 		
 		try {
-
-			// Yoda hace su magia:
-			// Creamos un String a partir de la informacion del paquete
-			String peticion=new String(paquete.getData());
-			// Yoda reinterpreta el mensaje:
-			String respuesta=yodaDo(peticion);
-			// Convertimos el String de respuesta en una array de bytes:
-			datosEnviar=respuesta.getBytes();
+            // Flujos de lectura y escritura con las clases del ejercicio 2
+            PrintWriter outPrinter = new PrintWriter(socketServicio.getOutputStream(),true);        
+            BufferedReader inReader = new BufferedReader(new InputStreamReader(socketServicio.getInputStream()));
 			
-			// Creamos el paquete con el nuevo mensaje -- TODO crear paquete
-            DatagramPacket paqueteEnvio = new DatagramPacket(datosEnviar, datosEnviar.length, paquete.getAddress(), paquete.getPort());
+			// Lee la frase a Yodaficar:
+            datosRecibidos = inReader.readLine();
+			
+			// Yoda hace su magia:
+			// Yoda reinterpreta el mensaje:
+			String respuesta=yodaDo(datosRecibidos);
+			
+			// Enviamos la traducción de Yoda:
+            outPrinter.println(respuesta);
 
-            // Enviamos el paquete
-            socketServicio.send(paqueteEnvio);
-
-            // Cerramos el socket
-            socketServicio.close();
-
-        // Excepciones
 		} catch (IOException e) {
 			System.err.println("Error al obtener los flujso de entrada/salida.");
 		}
