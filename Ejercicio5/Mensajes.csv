@@ -1,0 +1,11 @@
+Código, Cuerpo, Descripción
+
+100, CONNECT, el cliente solicita conectarse a un servidor
+101, ALLOW + ID, el servidor permite la conexion de un cliente y le asigna un identificador
+102, CONNECTED + ID, el cliente confirma la conexion
+
+300, NUM numero, El servidor saca un número del bingo
+301, RECEIVED, el cliente confirma que recibe un numero
+302, BINGO, el cliente notifica que ha hecho bingo
+303, END, el servidor indica que se ha terminado la partida
+304, WINNER id, el servidor indica la identificacion el ganador
