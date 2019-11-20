@@ -3,9 +3,21 @@ Código, Cuerpo, Descripción
 100, CONNECT, el cliente solicita conectarse a un servidor
 101, ALLOW + ID, el servidor permite la conexion de un cliente y le asigna un identificador
 102, CONNECTED + ID, el cliente confirma la conexion
+410, CANNOT CONNECT, el servidor indica que no se ha podido completar la conexión
+
+200, JOIN + ID, el cliente solicita unirse a una partida
+201, JOINED, el servidor confirma la unión
+420, FULL, el servidor notifica que no se puede unir a la partida porque está llena
+421, NOT IN STAGE, el servidor notifica que no se puede unir a la partida porque no está en espera (se está jugando o no se ha iniciado el proceso)
 
 300, NUM numero, El servidor saca un número del bingo
 301, RECEIVED, el cliente confirma que recibe un numero
 302, BINGO, el cliente notifica que ha hecho bingo
 303, END, el servidor indica que se ha terminado la partida
 304, WINNER id, el servidor indica la identificacion el ganador
+430, el cliente no ha podido recibir el número
+
+500, DISCONNECT + ID, el cliente envía solicitud para desconexión
+501, BYE, se confirma la desconexión
+450, IN GAME, el servidor rechaza la solicitud por estar en medio de una partida
+451, CANNOT DISCONNECT, el servidor no puede desconectar al cliente
