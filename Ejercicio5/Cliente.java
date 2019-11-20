@@ -128,7 +128,24 @@ public class Cliente extends Thread{
     }
 
     public void playGame(){
+        // Comprobaciones de seguridad
+        if(inGame == false){
+            syserr("No se puede jugar sin haber entrado a una partida!");
+            return;
+        }
+        if(connected == false){
+            syserr("No se puede jugar sin haberse conectado con un servidor");
+            return;
+        }
 
+        Boolean finished = false;
+        while(!finished){
+            // Recibir numeros
+        }
+
+
+        // Se ha salido de la partida
+        inGame = false;
     }
     
 
