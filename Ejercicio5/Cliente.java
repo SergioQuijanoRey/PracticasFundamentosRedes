@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+
 /**
  * Clase que representa un cliente del bingo
  *
@@ -17,7 +18,7 @@ public class Cliente extends Thread{
     //==========================================================================
     int port = 8989;
     String host = "localhost";
-    int ID;
+    Integer ID;
 
     // Conexion al servidor
     Socket servidor;
@@ -32,20 +33,64 @@ public class Cliente extends Thread{
         connectToServer();
 
         // Conseguimos los flujos de entrada salida
-        PrintWriter out = new PrintWriter(servidor.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(servidor.getInputStream()));
-        
+        try{
+            PrintWriter out = new PrintWriter(servidor.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(servidor.getInputStream()));
+        } catch(Exception e){
+            System.err.println("Error intentando tomar los flujos desde el cliente");
+        }
     }
 
     // Metodos
     //==========================================================================
+    /**
+     * El cliente se conecta al servidor
+     * */
+    public void connectToServer(){
+        // Se envia la solicitud
+        out.println("100, CONNECT");
+
+        // Se toma la recepcion
+        try{
+            // Se lee el mensaje y se procesa
+            String response = in.readLine();
+            Codop codop = new Codop(response);
+
+            if(codop.getCode() == 101){ // Se admite la conexion
+                // Tomamos el id dado por el servidor
+                this.ID = Integer.parseInt(codop.getArgs().get(1));
+
+                // Confirmamos al servidor
+                out.println("102, CONNECTED " + this.ID);
+
+                // Mostramos informacion
+                sysout("Conexion establecida! El ID del cliente es " + this.ID);
+
+
+            }else if(codop.getCode() == 410){ // Se rechaza la conexion
+                System.err.println("El servidor ha rechazado nuestra conexion"); 
+
+            }else{
+                System.err.println("Error al recibir la respuesta del servidor: codigo desconocido");
+                System.err.println("Codigo de error recibido: " + codop.getCode());
+            }
+
+        }catch(Exception e){
+            System.err.println("Error leyendo la respuesta del servidor en Cliente.connectToBingoServer()");
+        }
+    }
+    
+
     // Metodos privados
     //==========================================================================
-    private void connectToServer(){
+    /**
+     * Se establece una conexion socket a traves de TCP
+     * */
+    private void connectToBingoServer(){
         try{
             servidor = new Socket(host, port);
         }catch(Exception e){
-            syserror("Error al intentar establecer la conexion con el servidor");
+            System.err.println("Error al intentar establecer la conexion con el servidor");
         }
     }
 
