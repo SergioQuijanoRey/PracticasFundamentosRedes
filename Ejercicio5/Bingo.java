@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Random;
-package Bingo;
+import java.util.stream.*;
+import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * Clase que representa el juego del bingo
@@ -13,7 +15,7 @@ package Bingo;
 public class Bingo{
     // Atributos de la clase
     //==========================================================================
-    ArrayList<int> bolas;
+    ArrayList<Integer> bolas;
     int num_bolas;
     Random random;
 
@@ -23,7 +25,7 @@ public class Bingo{
      * Construye un bingo con un numero de bolas fijo
      * @param num numero maximo de bolas
      * */
-    Bingo(int num){
+    Bingo(Integer num){
 
         // Tomo el numero maximo de bolas
         num_bolas = num;
@@ -56,12 +58,17 @@ public class Bingo{
      * @return la bola del bingo elegida al azar
      * */
     public int getBola(){
-        // Tomo un valor del array y lo saco
-        int index = random.nextInt();
-        int value = bolas.remove(index);
+        if(bolas.size() == 0){
+            System.err.println("No quedan bolas en el bingo!");
+            return -1;
+        }else{
+            // Tomo un valor del array y lo saco
+            int index = random.nextInt(bolas.size());
+            int value = bolas.remove(index);
 
-        // Devuelvo el valor
-        return value;
+            // Devuelvo el valor
+            return value;
+        }
     }
 
     // Metodos privados
@@ -71,18 +78,28 @@ public class Bingo{
      * @param num el maximo del conjunto
      * */
     private void createBolas(int num){
-        this.bolas = IntStream.rangeClosed(0, num).boxed().collect(Collectors.toArrayList());
+        this.bolas = new ArrayList<Integer>();
+        for(int i = 0; i < num + 1; i++){
+            bolas.add(i);
+        }
     }
 
     // Testeo de la clase
     //==========================================================================
-    public void main(String[] args){
+    public static void main(String[] args){
         System.out.println("Creando un bingo de pruebas");
         Bingo pruebas = new Bingo(20);
 
-        System.out.println("Saco diez bolas del bingo");
-        for(int i = 0; i < 10; i++){
-            System.out.println("Valor sacado: " + bingo.getBola());
+        System.out.println("Saco bolas del bingo");
+        for(int i = 0; i < 30; i++){
+            System.out.println("Valor sacado: " + pruebas.getBola());
+        }
+
+        pruebas.recreate();
+
+        System.out.println("Saco bolas del bingo");
+        for(int i = 0; i < 20; i++){
+            System.out.println("Valor sacado: " + pruebas.getBola());
         }
     }
 }
