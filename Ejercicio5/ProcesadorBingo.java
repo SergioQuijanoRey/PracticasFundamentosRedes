@@ -21,7 +21,7 @@ private ArrayList<Integer> ids;
 private contador_id = 0;
 private ArrayList<Integer> jugadores; 
 
-ProcesadorBingo(Socket socketServicio,int num_jug)
+ProcesadorBingo(Socket socketServicio,int num_jug){
 
     this.socketServicio = socketServicio;
     ids = new ArrayList<Integer>;
