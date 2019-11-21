@@ -16,7 +16,7 @@ Código, Cuerpo, Descripción
 302, BINGO, el cliente notifica que ha hecho bingo
 303, END, el servidor indica que se ha terminado la partida
 304, WINNER id, el servidor indica la identificacion el ganador
-430, el cliente no ha podido recibir el número
+430, NOT RECEIVED, el cliente no ha podido recibir el número. Fuerza a que el servidor vuelva a enviar el numero
 
 500, DISCONNECT + ID, el cliente envía solicitud para desconexión
 501, BYE, se confirma la desconexión

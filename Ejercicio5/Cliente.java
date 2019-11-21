@@ -146,7 +146,10 @@ public class Cliente extends Thread{
 
     }
 
-    /***/
+    /**
+     * El cliente juega una partida, con un carton de numeros ya asignado
+     * @param numeros el carton de numeros asignado
+     * */
     public void playGame(ArrayList<Integer> numeros){
         // Comprobaciones de seguridad
         if(inGame == false){
@@ -160,9 +163,67 @@ public class Cliente extends Thread{
 
         Boolean finished = false;
         while(!finished){
-            // Recibir numeros
-        }
+            // Se lee un mensaje
+            String response = in.readLine();
+            Codop codop = new Codop(response);
+            
+            if(codop.getCode() == 300){ // Se recibe un numero
+                // Se toma el numero que nos han dado
+                Integer current_number = Integer.parseInt(codop.getArgs().get(0));
 
+                // Se procesa el numero
+                processIncomingNumber(current_number, numeros);
+
+
+            }else if(codop.getCode() == 303){ // El servidor notifica que se ha acabado el juego
+                // Recibimos quien es el ganador
+                response = in.readLine();
+                codop = new Codop(response);
+
+                // Comprobamos la respuesta
+                if(codop.getCode() == 304){
+                    Integer winner_id = Integer.parseInt(codop.getArgs().get(0));
+
+                    if(winner_id = this.ID){
+                        sysout("FELICIDADES, HAS GANADO LA PARTIDA");
+                    }else{
+                        sysout("El ganador de la partida ha sido el cliente con id: " + winner_id);
+                    }
+                }else{
+                    syserr("Codigo recibido desconocido");
+                    syserr("No se puede saber quien es el ganador");
+                }
+
+                // Notificamos que ya hemos acabado la partida
+                inGame = false;
+
+            }else{ // No se ha podido recibir un codigo valido
+                syserr("No se ha podido recibir un mensaje valido");
+                syserr("Se pide al servidor que vuelva a mandar el numero");
+
+                // Enviar codigo 403 y volver a pedir el numero
+                Boolean conseguido = false;
+                while(conseguido == false){
+                    // Se envia el mensaje
+                    out.println("430, NOT RECEIVED");
+
+                    // Se espera a recibir contestacion
+                    response = in.readLine();
+                    codop = new Codop(response);
+
+                    // Se recibe de forma correcta el numero
+                    if(codop.getCode() == 300){
+                        conseguido = true;
+                    }
+                }
+
+                syslog("El servidor ha conseguido volver a enviarnos el numero");
+
+                // Se procesa el numero
+                Integer current_number = Integer.parseInt(codop.getArgs().get(0));
+                processIncomingNumber(current_number, numeros);
+            }
+        }
 
         // Se ha salido de la partida
         inGame = false;
@@ -180,6 +241,30 @@ public class Cliente extends Thread{
         }catch(Exception e){
             System.err.println("Error al intentar establecer la conexion con el servidor");
         }
+    }
+
+    /**
+     * Procesa un numero recibido por el servidor en una partida
+     * @param number el numero recibido del servidor
+     * @param numbers el carton de numeros con el que juganos, SE MODIFICA
+     *
+     * Se quita el numero del carton en caso de que este
+     * Se envia el mensaje de confirmacion al servidor:
+     *  - 301, RECEIVED si quedan numeros
+     *  - 302, BINGO si no quedan numeros, porque habriamos ganado
+     * */
+    private void processIncomingNumber(Integer number, ArrayList<Integer> numbers){
+                // Lo quitamos del carton
+                numbers.removeIf(value -> value == number);
+
+                // Confirmamos al servidor
+                if(numbers.size() == 0){
+                    // Indicamos que hemos ganado
+                    out.println("302, BINGO");
+                }else{
+                    // Indicamos que hemos recibido el mensaje
+                    out.println("301, RECEIVED");
+                }
     }
 
     // Funcion principal
