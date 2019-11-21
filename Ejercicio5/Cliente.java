@@ -17,11 +17,15 @@ import java.util.ArrayList;
 public class Cliente extends Thread{
     // Atributos de la clase
     //==========================================================================
+    // Datos sobre el servidor
     int port = 8989;
     String host = "localhost";
+
+    // Datos sobre el estado del cliente
     Integer ID;
     Boolean connected;
     Boolean inGame;
+    ArrayList<Integer> numbers;
 
     // Conexion al servidor
     Socket servidor;
@@ -34,6 +38,7 @@ public class Cliente extends Thread{
         // Establezco algunas variables
         connected = false;
         inGame = false;
+        numbers = new ArrayList<Integer>();
 
         // Conexion al servidor
         connectToServer();
@@ -47,7 +52,7 @@ public class Cliente extends Thread{
         }
     }
 
-    // Metodos
+    // Metodos Publicos
     //==========================================================================
     /**
      * El cliente se conecta al servidor
@@ -91,6 +96,8 @@ public class Cliente extends Thread{
 
     /**
      * El cliente se une a una partida
+     * Si se une a la partida con exito, se entra a la partida automaticamente
+     *
      * */
     public void joinGame(){
         // Comprobamos si estamos conectados
@@ -110,22 +117,22 @@ public class Cliente extends Thread{
             if(codop.getCode() == 201){ // Accedemos a la partida
 
                 // Recibimos los numeros del carton del bingo
-                ArrayList<Integer> numeros = new ArrayList<Integer>();
+                numbers = new ArrayList<Integer>();
                 response = in.readLine();
                 codop = new Codop(response);
 
                 // Se comprueba el mensaje
                 if(codop.getCode() == 202){
                     for(int i = 0; i < codop.getArgs().size(); i++){
-                        numeros.add(Integer.parseInt(codop.getArgs().get(i)));
+                        numbers.add(Integer.parseInt(codop.getArgs().get(i)));
                     }
 
                     // Entramos al juego
                     inGame = true;
-                    this.playGame(numeros);
+                    this.playGame();
                 }else{
-                    syserr("Se ha leido un codigo de respuesta no valido");
-                    syserr("No hemos entrado al juego");
+                    System.err.println("Se ha leido un codigo de respuesta no valido");
+                    System.err.println("No hemos entrado al juego");
                 }
 
 
@@ -143,14 +150,12 @@ public class Cliente extends Thread{
         } catch(Exception e){
             System.err.println("Error leyendo del socket en Cliente.joinGame()");
         }
-
     }
 
     /**
      * El cliente juega una partida, con un carton de numeros ya asignado
-     * @param numeros el carton de numeros asignado
      * */
-    public void playGame(ArrayList<Integer> numeros){
+    public void playGame(){
         // Comprobaciones de seguridad
         if(inGame == false){
             System.err.println("No se puede jugar sin haber entrado a una partida!");
@@ -172,7 +177,7 @@ public class Cliente extends Thread{
                 Integer current_number = Integer.parseInt(codop.getArgs().get(0));
 
                 // Se procesa el numero
-                processIncomingNumber(current_number, numeros);
+                processIncomingNumber(current_number, numbers);
 
 
             }else if(codop.getCode() == 303){ // El servidor notifica que se ha acabado el juego
@@ -184,22 +189,22 @@ public class Cliente extends Thread{
                 if(codop.getCode() == 304){
                     Integer winner_id = Integer.parseInt(codop.getArgs().get(0));
 
-                    if(winner_id = this.ID){
-                        sysout("FELICIDADES, HAS GANADO LA PARTIDA");
+                    if(winner_id == this.ID){
+                        System.out.println("FELICIDADES, HAS GANADO LA PARTIDA");
                     }else{
-                        sysout("El ganador de la partida ha sido el cliente con id: " + winner_id);
+                        System.out.println("El ganador de la partida ha sido el cliente con id: " + winner_id);
                     }
                 }else{
-                    syserr("Codigo recibido desconocido");
-                    syserr("No se puede saber quien es el ganador");
+                    System.err.println("Codigo recibido desconocido");
+                    System.err.println("No se puede saber quien es el ganador");
                 }
 
                 // Notificamos que ya hemos acabado la partida
                 inGame = false;
 
             }else{ // No se ha podido recibir un codigo valido
-                syserr("No se ha podido recibir un mensaje valido");
-                syserr("Se pide al servidor que vuelva a mandar el numero");
+                System.err.println("No se ha podido recibir un mensaje valido");
+                System.err.println("Se pide al servidor que vuelva a mandar el numero");
 
                 // Enviar codigo 403 y volver a pedir el numero
                 Boolean conseguido = false;
@@ -217,11 +222,11 @@ public class Cliente extends Thread{
                     }
                 }
 
-                syslog("El servidor ha conseguido volver a enviarnos el numero");
+                System.err.println("El servidor ha conseguido volver a enviarnos el numero");
 
                 // Se procesa el numero
                 Integer current_number = Integer.parseInt(codop.getArgs().get(0));
-                processIncomingNumber(current_number, numeros);
+                processIncomingNumber(current_number, numbers);
             }
         }
 
@@ -229,7 +234,6 @@ public class Cliente extends Thread{
         inGame = false;
     }
     
-
     // Metodos privados
     //==========================================================================
     /**
@@ -271,8 +275,17 @@ public class Cliente extends Thread{
     //==========================================================================
     /**
      * Funcion principal del cliente
+     *
+     * Sirve de testeo del programa creado
      * */
     public static void main(String[] args){
+        // Se crea el cliente
+        Cliente cliente = new Cliente();
 
+        // Nos conectamos al servidor
+        cliente.connectToServer();
+
+        // Intentamos echar una partida
+        cliente.joinGame();
     }
 }
