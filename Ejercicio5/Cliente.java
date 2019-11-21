@@ -32,8 +32,6 @@ public class Cliente extends Thread{
     PrintWriter out;
     BufferedReader in;
 
-    // Constructores
-    //==========================================================================
     Cliente(){
         // Establezco algunas variables
         connected = false;
@@ -41,7 +39,7 @@ public class Cliente extends Thread{
         numbers = new ArrayList<Integer>();
 
         // Conexion al servidor
-        connectToServer();
+        connectToBingoServer();
 
         // Conseguimos los flujos de entrada salida
         try{
@@ -156,82 +154,86 @@ public class Cliente extends Thread{
      * El cliente juega una partida, con un carton de numeros ya asignado
      * */
     public void playGame(){
-        // Comprobaciones de seguridad
-        if(inGame == false){
-            System.err.println("No se puede jugar sin haber entrado a una partida!");
-            return;
-        }
-        if(connected == false){
-            System.err.println("No se puede jugar sin haberse conectado con un servidor");
-            return;
-        }
+        try{
+            // Comprobaciones de seguridad
+            if(inGame == false){
+                System.err.println("No se puede jugar sin haber entrado a una partida!");
+                return;
+            }
+            if(connected == false){
+                System.err.println("No se puede jugar sin haberse conectado con un servidor");
+                return;
+            }
 
-        Boolean finished = false;
-        while(!finished){
-            // Se lee un mensaje
-            String response = in.readLine();
-            Codop codop = new Codop(response);
-            
-            if(codop.getCode() == 300){ // Se recibe un numero
-                // Se toma el numero que nos han dado
-                Integer current_number = Integer.parseInt(codop.getArgs().get(0));
+            Boolean finished = false;
+            while(!finished){
+                // Se lee un mensaje
+                String response = in.readLine();
+                Codop codop = new Codop(response);
+                
+                if(codop.getCode() == 300){ // Se recibe un numero
+                    // Se toma el numero que nos han dado
+                    Integer current_number = Integer.parseInt(codop.getArgs().get(0));
 
-                // Se procesa el numero
-                processIncomingNumber(current_number, numbers);
+                    // Se procesa el numero
+                    processIncomingNumber(current_number, numbers);
 
 
-            }else if(codop.getCode() == 303){ // El servidor notifica que se ha acabado el juego
-                // Recibimos quien es el ganador
-                response = in.readLine();
-                codop = new Codop(response);
-
-                // Comprobamos la respuesta
-                if(codop.getCode() == 304){
-                    Integer winner_id = Integer.parseInt(codop.getArgs().get(0));
-
-                    if(winner_id == this.ID){
-                        System.out.println("FELICIDADES, HAS GANADO LA PARTIDA");
-                    }else{
-                        System.out.println("El ganador de la partida ha sido el cliente con id: " + winner_id);
-                    }
-                }else{
-                    System.err.println("Codigo recibido desconocido");
-                    System.err.println("No se puede saber quien es el ganador");
-                }
-
-                // Notificamos que ya hemos acabado la partida
-                inGame = false;
-
-            }else{ // No se ha podido recibir un codigo valido
-                System.err.println("No se ha podido recibir un mensaje valido");
-                System.err.println("Se pide al servidor que vuelva a mandar el numero");
-
-                // Enviar codigo 403 y volver a pedir el numero
-                Boolean conseguido = false;
-                while(conseguido == false){
-                    // Se envia el mensaje
-                    out.println("430, NOT RECEIVED");
-
-                    // Se espera a recibir contestacion
+                }else if(codop.getCode() == 303){ // El servidor notifica que se ha acabado el juego
+                    // Recibimos quien es el ganador
                     response = in.readLine();
                     codop = new Codop(response);
 
-                    // Se recibe de forma correcta el numero
-                    if(codop.getCode() == 300){
-                        conseguido = true;
+                    // Comprobamos la respuesta
+                    if(codop.getCode() == 304){
+                        Integer winner_id = Integer.parseInt(codop.getArgs().get(0));
+
+                        if(winner_id == this.ID){
+                            System.out.println("FELICIDADES, HAS GANADO LA PARTIDA");
+                        }else{
+                            System.out.println("El ganador de la partida ha sido el cliente con id: " + winner_id);
+                        }
+                    }else{
+                        System.err.println("Codigo recibido desconocido");
+                        System.err.println("No se puede saber quien es el ganador");
                     }
+
+                    // Notificamos que ya hemos acabado la partida
+                    inGame = false;
+
+                }else{ // No se ha podido recibir un codigo valido
+                    System.err.println("No se ha podido recibir un mensaje valido");
+                    System.err.println("Se pide al servidor que vuelva a mandar el numero");
+
+                    // Enviar codigo 403 y volver a pedir el numero
+                    Boolean conseguido = false;
+                    while(conseguido == false){
+                        // Se envia el mensaje
+                        out.println("430, NOT RECEIVED");
+
+                        // Se espera a recibir contestacion
+                        response = in.readLine();
+                        codop = new Codop(response);
+
+                        // Se recibe de forma correcta el numero
+                        if(codop.getCode() == 300){
+                            conseguido = true;
+                        }
+                    }
+
+                    System.err.println("El servidor ha conseguido volver a enviarnos el numero");
+
+                    // Se procesa el numero
+                    Integer current_number = Integer.parseInt(codop.getArgs().get(0));
+                    processIncomingNumber(current_number, numbers);
                 }
-
-                System.err.println("El servidor ha conseguido volver a enviarnos el numero");
-
-                // Se procesa el numero
-                Integer current_number = Integer.parseInt(codop.getArgs().get(0));
-                processIncomingNumber(current_number, numbers);
             }
-        }
 
-        // Se ha salido de la partida
-        inGame = false;
+            // Se ha salido de la partida
+            inGame = false;
+        }catch(Exception e){
+            System.err.println("Error en las comunicaciones de Cliente.joinGame()");
+        }
     }
     
     // Metodos privados
