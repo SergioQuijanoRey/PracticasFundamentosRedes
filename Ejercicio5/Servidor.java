@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.lang.Thread;
 import java.util.ArrayList;
+import java.net.SocketTimeoutException;
 
 
 /**
@@ -19,6 +20,7 @@ public class Servidor{
     //==========================================================================
     int num_jugadores;  //> Indica cuantos jugadores se necesitan para jugar una partida
     int port = 8989 ;
+    private static int timeout = 100;
 
     ServerSocket socketServidor;    //> Socket del servidor
     ArrayList<ProcesadorBingo> procesadores;    //> Todos los clientes que tenemos conectados
@@ -39,12 +41,12 @@ public class Servidor{
         // Al inicio no hay conexiones a los clientes
         this.procesadores = new ArrayList<ProcesadorBingo>();
 
-        // Se pone el servidor a escuchar
-        try{
-            socketServidor = new ServerSocket(port);
-        }catch(Exception e){
-            System.err.println("Error al crear el socket del servidor");
-        }
+        // Establezco el timeout para aceptar conexiones
+        socketServidor.setSoTimeout(timeout);
+
+        // Ejecutamos el codigo del servidor iterativo
+        this.run();
+
     }
 
     // Metodos publicos
@@ -54,6 +56,15 @@ public class Servidor{
      * */
     public void run(){
         while(true){
+            // Se pone el servidor a escuchar
+            try{
+                socketServidor = new ServerSocket(port);
+            }catch(SocketTimeoutException e){
+                // No hacemos nada, pasa el timeout
+            }catch(Exception e){
+                System.err.println("Error al crear el socket del servidor");
+            }
+
             try{
                 // Espero a recibir una conexion
                 Socket current_conexion = socketServidor.accept();
