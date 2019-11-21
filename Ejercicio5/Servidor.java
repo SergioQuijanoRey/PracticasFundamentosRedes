@@ -44,6 +44,13 @@ public class Servidor{
         // Establezco el timeout para aceptar conexiones
         socketServidor.setSoTimeout(timeout);
 
+        // Creamos el socket servidor
+        try{
+            socketServidor = new ServerSocket(port);
+        }catch(Exception e){
+            System.err.println("Error al crear el socket del servidor");
+        }
+
         // Ejecutamos el codigo del servidor iterativo
         this.run();
 
@@ -56,18 +63,23 @@ public class Servidor{
      * */
     public void run(){
         while(true){
-            // Se pone el servidor a escuchar
-            try{
-                socketServidor = new ServerSocket(port);
-            }catch(SocketTimeoutException e){
-                // No hacemos nada, pasa el timeout
-            }catch(Exception e){
-                System.err.println("Error al crear el socket del servidor");
-            }
 
+            // Intentamos conectar a un nuevo cliente
             try{
                 // Espero a recibir una conexion
                 Socket current_conexion = socketServidor.accept();
+
+
+                
+            }catch(SocketTimeoutException timeout){
+                // No hacemos nada por el timeout
+            }catch(Exception e){
+                syserr("Error al establecer un nuevo socket con el cliente en Servidor.run()");
+            }
+
+
+
+            try{
 
                 // Asignamos un procesador a la conexion
                 ProcesadorBingo current_procesador = new ProcesadorBingo(current_conexion, num_jugadores);
