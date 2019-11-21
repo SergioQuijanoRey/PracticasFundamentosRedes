@@ -21,7 +21,7 @@ public class Servidor{
     int port = 8989 ;
 
     ServerSocket socketServidor;    //> Socket del servidor
-    ArrayList<Socket> conexiones;   //> Array con las conexiones a los jugadores
+    ArrayList<ProcesadorBingo> procesadores;    //> Todos los clientes que tenemos conectados
 
     // Constructores
     //==========================================================================
@@ -37,13 +37,13 @@ public class Servidor{
         this.num_jugadores = num_jugadores;
 
         // Al inicio no hay conexiones a los clientes
-        this.conexiones = new ArrayList<Socket>();
+        this.procesadores = new ArrayList<ProcesadorBingo>();
 
         // Se pone el servidor a escuchar
         try{
             socketServidor = new ServerSocket(port);
         }catch(Exception e){
-            syserr("Error al crear el socket del servidor");
+            System.err.println("Error al crear el socket del servidor");
         }
     }
 
@@ -54,51 +54,32 @@ public class Servidor{
      * */
     public void run(){
         while(true){
-            Socket current_conexion = socketServidor.accept();
+            try{
+                // Espero a recibir una conexion
+                Socket current_conexion = socketServidor.accept();
+
+                // Asignamos un procesador a la conexion
+                ProcesadorBingo current_procesador = new ProcesadorBingo(current_conexion, num_jugadores);
+                procesadores.add(current_procesador);
+
+                // Lanzamos la hebra del procesador
+                current_procesador.start();
+
+            }catch(Exception e){
+                System.err.println("Error recibiendo una conexion socket en Servidor.run()");
+            }
         }
     }
-
-    @Deprecated
-    public void run_daniel(){
-        try {
-            
-                        ServerSocket serverSocket = null;
-                        try{
-                            serverSocket= new ServerSocket(port);
-                        } catch (IOException e){
-                            System.out.println("Error: no se pudo atender en el puerto "+port);
-                        }
-            
-            do {
-                
-                
-                                Socket socketServicio;
-                                socketServicio = serverSocket.accept();
-                
-                ProcesadorBingo procesador=new ProcesadorBingo(socketServicio,num_jugadores);
-                procesador.run();
-                
-            } while (true);
-            
-        } catch (IOException e) {
-            System.err.println("Error al escuchar en el puerto "+port);
-        }
-    }
-
-
-    // Metodos privados
-    //==========================================================================
 
     // Ejecucion del programa
     //==========================================================================
 
+    /**
+     * Metodo que lanza el programa del servidor
+     * */
     public static void main(String[] args){
-
-
-        Servidor server = new Servidor();
-        server.run(port);
-        
-
+        // Lanzamos el servidor (el run no tiene nada que ver con los Threads de Java)
+        Servidor server = new Servidor(2);
+        server.run();
     }
-
 }
