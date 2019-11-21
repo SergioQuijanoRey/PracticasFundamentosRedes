@@ -28,7 +28,7 @@ public class ProcesadorBingo extends Thread{
     private int num_jug_max;
     private int num_jug;
     private ArrayList<Integer> ids;
-    private contador_id = 0;
+    private int contador_id = 0;
     private ArrayList<Integer> jugadores; 
 
     // Constructores
@@ -67,22 +67,21 @@ public class ProcesadorBingo extends Thread{
 
                 datosRecibidos = inReader.readLine();
                 Codop codop = new Codop(datosRecibidos);
-
                 int opcion = codop.getCode();
 
                 switch(opcion){
 
-                    case "100"
+                    case "100":
                         datosEnviados = " 101,ALLOW +"+ contador_id;
                         outPrinter.println(datosEnviados);
                     break;
 
-                    case "102"
+                    case "102":
                         ids.add(contador_id);   //solo añadimos el ID a la lista tras confirmarse la conexion
                         contador_id = contador_id + 1;
                     break;
 
-                    case "200"
+                    case "200":
                         if(num_jug<num_jug_max){
                             jugadores.add(datosRecibidos.getArgs.split("+")[1]);
                             datosEnviados = "201,JOINED";
@@ -95,11 +94,10 @@ public class ProcesadorBingo extends Thread{
                         
                         if(num_jug == num_jug_max){
                             partida_empezada = true;
-                        }
-                        
+                        }  
                     break;
 
-                    case "500"
+                    case "500":
                         int id = datosRecibidos.getArgs.split("+")[1].parseInt();
                         if(ids.contains(id){
                             ids.remove(id);
@@ -110,6 +108,7 @@ public class ProcesadorBingo extends Thread{
                             datosEnviados = "451, CANNOT DISCONNECT";
                         }
                         outPrinter.println(datosEnviados);
+                    break;
                 }
 
                 while(!fin){ // Ya estamos en partida
@@ -121,9 +120,6 @@ public class ProcesadorBingo extends Thread{
 
             }
         }
-        
-
-
 
     }catch( IOException e){
         System.err.println("Error al obterner los flujos de entrada/salida.");

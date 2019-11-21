@@ -22,8 +22,8 @@ public class Servidor{
     int port = 8989 ;
     private static int timeout = 100;
 
-    ServerSocket socketServidor;    //> Socket del servidor
-    ArrayList<ProcesadorBingo> procesadores;    //> Todos los clientes que tenemos conectados
+    public ServerSocket socketServidor;    //> Socket del servidor
+    public ArrayList<ProcesadorBingo> procesadores;    //> Todos los clientes que tenemos conectados
 
     // Constructores
     //==========================================================================
@@ -102,7 +102,24 @@ public class Servidor{
      * */
     public static void main(String[] args){
         // Lanzamos el servidor (el run no tiene nada que ver con los Threads de Java)
+        int n_clientes = 2
         Servidor server = new Servidor(2);
         server.run();
+
+        PrintWriter outPrinter;
+
+        ArrayList<String> mensajes = new ArrayList<String>(); 
+
+        Bingo bingo = new Bingo(16);
+        ArrayList<Bingo> cartones = new ArrayList<Bingo>(); 
+        for(int i = 0; i < n_clientes ;i++ ){
+            cartones[i] = new Bingo(16);
+            mensajes[i] = "202, NUMBERS +";
+            for(int j = 0; j < 16;j++){
+                mensajes[i] = mensajes[i] + "," + cartones[i].getBolas(); 
+            }
+            outPrinter = PrintWriter(procesador[i].getOutputStream(),true);
+            outPrinter.println(mensajes[i]);
+        }
     }
 }
