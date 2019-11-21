@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 
 /**
@@ -107,9 +108,27 @@ public class Cliente extends Thread{
             Codop codop = new Codop(response);
 
             if(codop.getCode() == 201){ // Accedemos a la partida
-                // Pasamos a jugar
-                inGame = true;
-                this.playGame();
+
+                // Recibimos los numeros del carton del bingo
+                ArrayList<Integer> numeros = new ArrayList<Integer>();
+                response = in.readLine();
+                codop = new Codop(response);
+
+                // Se comprueba el mensaje
+                if(codop.getCode() == 202){
+                    for(int i = 0; i < codop.getArgs().size(); i++){
+                        numeros.add(Integer.parseInt(codop.getArgs().get(i)));
+                    }
+
+                    // Entramos al juego
+                    inGame = true;
+                    this.playGame(numeros);
+                }else{
+                    syserr("Se ha leido un codigo de respuesta no valido");
+                    syserr("No hemos entrado al juego");
+                }
+
+
 
             }else if(codop.getCode() == 420){ // Partida con demasiados jugadores
                 System.err.println("El servidor ya no puede aceptar mas jugadores");
@@ -121,13 +140,14 @@ public class Cliente extends Thread{
                 System.err.println("Codigo de respuesta: " + codop.getCode());
 
             }
-        }catch(Exception e){
+        } catch(Exception e){
             System.err.println("Error leyendo del socket en Cliente.joinGame()");
         }
 
     }
 
-    public void playGame(){
+    /***/
+    public void playGame(ArrayList<Integer> numeros){
         // Comprobaciones de seguridad
         if(inGame == false){
             System.err.println("No se puede jugar sin haber entrado a una partida!");
