@@ -84,80 +84,29 @@ public class Servidor{
     // Metodos publicos
     //==========================================================================
     /**
-     * Se ejecuta el proceso del servidor
+     * Se ejecuta el proceso del servidor indefinidamente
+     *
+     * 1. Añadimos posibles conexiones
+     * 2. Si estamos en una partida, hacemos una iteracion del juego
+     * 3. En otro caso, leemos los mensajes de todos los clientes conectados
      * */
     public void run(){
-
-        // 1 - Miramos la conexion
-        // 2 - Leemos el mensaje de cada cliente
-        // 2 - Si no estamos en una partida, iniciar el proceso de partida
-        // 3 - Si estamos en partida
-        //      3.1 - Mandar numero
-        //      3.2 - Esperar a recibir todas las confirmaciones
         while(true){
 
             // Intentamos conectar a un nuevo cliente
             connect_new_client();
 
-
-            // Si estoy una partida
-            //      Envio un mensaje con el numero
-            //      Espero a que me respondan
-            // Si no estoy en una partida
-            //      Leo los mensajes de todos los clientes
-
-            // Estamos en partida
-            // Enviamos numeros
-            // Leemos solo de los clientes de la partida
-            // Consideramos solo los mensajes involucrados en la partida
+            // Si estamos en una partida, hacemos iteraciones del juego hasta que
+            // se acabe el juego
             if(inGame){
                 Boolean acabado = false;
                 while(acabado == false){
-                    // Saco la bola del bingo
-                    int bola = bingo.getBola();
-
-                    // Envio la bola a todos los clientes
-                    for(int i = 0; i < ingame_outs.size(); i++){
-                        ingame_outs.get(i).println("300, NUM " + bola);
-                    }
-
-                    // Espero a que todos los clientes me confirmen
-                    for(int i = 0; i < ingame_outs.size(); i++){
-                        String response = ingame_ins.get(i).readLine();
-                        Codop codop = new Codop(response);
-
-                        switch(codop.getCode()){
-                            // Se confirma
-                            // No hay que hacer nada
-                            case 301:
-                            break;
-
-                            // Procesar la victoria
-                            case 302:
-                                // Hemos acabado la partida
-                                acabado = true;
-
-                                // Se notifica a todos los clientes
-                                notify_win();
-                            break;
-
-                            // No se ha recibido
-                            case 430:
-                                procesar_no_recibido();
-                            break;
-
-                            // El codigo recibido no es valido
-                            default:
-                                procesar_no_recibido();
-                            break;
-                        }
-                    }
+                    // Realizamos una iteracion del juego
+                    iteration_of_game(acabado);
                 }
-
-            // No estamos en una partida
-            // Leemos de todos los clientes y consideramos todos los mensajes
             }else{
-                // Leemos todos los mensajes de los clientes
+                // Leemos todos los mensajes de los clientes y consideramos todos
+                // los posibles mensajes de esta fase
                 read_from_all();
             }
 
@@ -318,6 +267,52 @@ public class Servidor{
             }
     }
 
+    /**
+     * Se hace una iteracion del juego
+     * @param acabado booleano que controla si se ha acabado el juego
+     * */
+    private void iteration_of_game(Boolean acabado){
+        // Saco la bola del bingo
+        int bola = bingo.getBola();
+
+        // Envio la bola a todos los clientes
+        for(int i = 0; i < ingame_outs.size(); i++){
+            ingame_outs.get(i).println("300, NUM " + bola);
+        }
+
+        // Espero a que todos los clientes me confirmen
+        for(int i = 0; i < ingame_outs.size(); i++){
+            String response = ingame_ins.get(i).readLine();
+            Codop codop = new Codop(response);
+
+            switch(codop.getCode()){
+                // Se confirma
+                // No hay que hacer nada
+                case 301:
+                break;
+
+                // Procesar la victoria
+                case 302:
+                    // Hemos acabado la partida
+                    acabado = true;
+
+                    // Se notifica a todos los clientes
+                    notify_win();
+                break;
+
+                // No se ha recibido
+                case 430:
+                    procesar_no_recibido();
+                break;
+
+                // El codigo recibido no es valido
+                default:
+                    procesar_no_recibido();
+                break;
+            }
+        
+    }
+
     // Ejecucion del programa
     //==========================================================================
 
@@ -329,4 +324,5 @@ public class Servidor{
         Servidor server = new Servidor(2);
         server.run();
     }
+
 }
