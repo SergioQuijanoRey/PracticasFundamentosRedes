@@ -22,8 +22,17 @@ public class Servidor{
     int port = 8989 ;
     private static int timeout = 100;
 
-    public ServerSocket socketServidor;    //> Socket del servidor
-    public ArrayList<ProcesadorBingo> procesadores;    //> Todos los clientes que tenemos conectados
+    // Conexiones
+    private ServerSocket socketServidor;     //> Socket del servidor
+    private ArrayList<Socket> conexiones;    //> Todos los clientes que tenemos conectados
+    private ArrayList<BufferedReader> ins;  //> Flujos de entrada
+    private ArrayList<PrintWriter> outs;  //> Flujos de entrada
+    
+
+
+    // Estado del servidor
+    Boolean inGame;
+    Integer current_id;
 
     // Constructores
     //==========================================================================
@@ -38,8 +47,16 @@ public class Servidor{
         // Se establece el numero de jugadores
         this.num_jugadores = num_jugadores;
 
-        // Al inicio no hay conexiones a los clientes
-        this.procesadores = new ArrayList<ProcesadorBingo>();
+        // Se establece el contador de identificadores
+        current_id = 0;
+
+        // Al inicio no hay conexiones a los clientes ni flujos
+        this.conexiones = new ArrayList<Socket>();
+        ins = new ArrayLis<BufferedReader>();
+        outs = new ArrayList<PrintWriter>();
+
+        // Establecemos que no estamos en una partida
+        inGame = false;
 
         // Establezco el timeout para aceptar conexiones
         socketServidor.setSoTimeout(timeout);
@@ -62,6 +79,12 @@ public class Servidor{
      * Se ejecuta el proceso del servidor
      * */
     public void run(){
+
+        // 1 - Miramos la conexion
+        // 2 - Si no estamos en una partida, iniciar el proceso de partida
+        // 3 - Si estamos en partida
+        //      3.1 - Mandar numero
+        //      3.2 - Esperar a recibir todas las confirmaciones
         while(true){
 
             // Intentamos conectar a un nuevo cliente
@@ -69,27 +92,66 @@ public class Servidor{
                 // Espero a recibir una conexion
                 Socket current_conexion = socketServidor.accept();
 
+                // Lo añadimos a nuestras conexiones
+                conexiones.add(current_conexion);
 
+                // Creamos los flujos y los añadimos
+                PrintWriter current_out = new PrintWriter(current_conexion.getOutputStream(), true);
+                BufferedReader current_in = new BufferedReader(new InputStreamReader(current_conexion.getInputStream()));
+                outs.add(current_out);
+                ins.add(current_in);
+
+                // Exigimos que nos envie la peticion de conexion por nuestro protocolo
+                String response = current_in.readLine();
+                Codop codop = new Codop(response);
+
+                if(codop.getCode() != 100){
+                    // Muestro el mensaje
+                    syserr("Error, el cliente no nos ha solicitado la conexion");
+                    syserr("El usuario se quita de las conexiones")
+
+                    // Quito al cliente de las conexiones
+                    conexiones.pop();
+                    outs.pop();
+                    ins.pop();
+                }else{
+                    // Asigno la ID que le corresponde
+                    current_out.println("101, ALLOW + " + current_id);
+                    current_id = current_id + 1;
+
+                    // Esperamos que el cliente confirme la conexion
+                    response = current_in.readLine();
+                    codop = new Codop(response);
+
+                    if(codop.getCode() != 102 || (codop.getCode() == 102 && codop.getArg(1) != Integer.toString(current_id - 1))){
+                        syserr("ERROR, el cliente no ha confirmado la conexion correctamente");
+                        syserr("El usuario se quita de las conexiones");
+                        
+                        // Quito al cliente de las conexiones
+                        conexiones.pop();
+                        outs.pop();
+                        ins.pop();
+                    }else{
+                        sysout("Nuevo cliente conectado con exito");
+                    }
+                }
                 
+
             }catch(SocketTimeoutException timeout){
                 // No hacemos nada por el timeout
+                // Para que podamos trabajar como un servidor iterativo
             }catch(Exception e){
-                syserr("Error al establecer un nuevo socket con el cliente en Servidor.run()");
+                System.err.println("Error al establecer un nuevo socket con el cliente en Servidor.run()");
             }
 
+            // Tenemos que lanzar una nueva partida
+            if(inGame == false && conexiones.size() >= num_jugadores){
+                
+            // Realizamos la iteracion de la partida
+            }else if(inGame == true){
 
+            }else{
 
-            try{
-
-                // Asignamos un procesador a la conexion
-                ProcesadorBingo current_procesador = new ProcesadorBingo(current_conexion, num_jugadores);
-                procesadores.add(current_procesador);
-
-                // Lanzamos la hebra del procesador
-                current_procesador.start();
-
-            }catch(Exception e){
-                System.err.println("Error recibiendo una conexion socket en Servidor.run()");
             }
         }
     }
@@ -101,25 +163,10 @@ public class Servidor{
      * Metodo que lanza el programa del servidor
      * */
     public static void main(String[] args){
-        // Lanzamos el servidor (el run no tiene nada que ver con los Threads de Java)
-        int n_clientes = 2
+        // Lanzamos el servidor y lo ejecutamos
         Servidor server = new Servidor(2);
         server.run();
-
-        PrintWriter outPrinter;
-
-        ArrayList<String> mensajes = new ArrayList<String>(); 
-
-        Bingo bingo = new Bingo(16);
-        ArrayList<Bingo> cartones = new ArrayList<Bingo>(); 
-        for(int i = 0; i < n_clientes ;i++ ){
-            cartones[i] = new Bingo(16);
-            mensajes[i] = "202, NUMBERS +";
-            for(int j = 0; j < 16;j++){
-                mensajes[i] = mensajes[i] + "," + cartones[i].getBolas(); 
-            }
-            outPrinter = PrintWriter(procesador[i].getOutputStream(),true);
-            outPrinter.println(mensajes[i]);
-        }
     }
 }
+            PrintWriter outPrinter = new PrintWriter(socketServicio.getOutputStream(), true);
+            BufferedReader inReader = new BufferedReader(new InputStreamReader(socketServicio.getInputStream()));
