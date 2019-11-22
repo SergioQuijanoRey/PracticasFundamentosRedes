@@ -32,6 +32,7 @@ public class Servidor{
 
     // Estado del servidor
     Boolean inGame;
+    Boolean inStage;
     Integer current_id;
 
     // Constructores
@@ -57,6 +58,7 @@ public class Servidor{
 
         // Establecemos que no estamos en una partida
         inGame = false;
+        inStage = false;
 
         // Establezco el timeout para aceptar conexiones
         socketServidor.setSoTimeout(timeout);
@@ -81,6 +83,7 @@ public class Servidor{
     public void run(){
 
         // 1 - Miramos la conexion
+        // 2 - Leemos el mensaje de cada cliente
         // 2 - Si no estamos en una partida, iniciar el proceso de partida
         // 3 - Si estamos en partida
         //      3.1 - Mandar numero
@@ -107,8 +110,11 @@ public class Servidor{
 
                 if(codop.getCode() != 100){
                     // Muestro el mensaje
-                    syserr("Error, el cliente no nos ha solicitado la conexion");
-                    syserr("El usuario se quita de las conexiones")
+                    System.err.println("Error, el cliente no nos ha solicitado la conexion");
+                    System.err.println("El usuario se quita de las conexiones");
+
+                    // Envio el mensaje de que no se puede conectar
+                    current_out.println("410, CANNOT CONNECT");
 
                     // Quito al cliente de las conexiones
                     conexiones.pop();
@@ -124,8 +130,11 @@ public class Servidor{
                     codop = new Codop(response);
 
                     if(codop.getCode() != 102 || (codop.getCode() == 102 && codop.getArg(1) != Integer.toString(current_id - 1))){
-                        syserr("ERROR, el cliente no ha confirmado la conexion correctamente");
-                        syserr("El usuario se quita de las conexiones");
+                        System.err.println("ERROR, el cliente no ha confirmado la conexion correctamente");
+                        System.err.println("El usuario se quita de las conexiones");
+                        
+                        // Envio el mensaje de que no se puede conectar
+                        current_out.println("410, CANNOT CONNECT");
                         
                         // Quito al cliente de las conexiones
                         conexiones.pop();
@@ -135,8 +144,6 @@ public class Servidor{
                         sysout("Nuevo cliente conectado con exito");
                     }
                 }
-                
-
             }catch(SocketTimeoutException timeout){
                 // No hacemos nada por el timeout
                 // Para que podamos trabajar como un servidor iterativo
@@ -144,16 +151,94 @@ public class Servidor{
                 System.err.println("Error al establecer un nuevo socket con el cliente en Servidor.run()");
             }
 
-            // Tenemos que lanzar una nueva partida
-            if(inGame == false && conexiones.size() >= num_jugadores){
-                
-            // Realizamos la iteracion de la partida
-            }else if(inGame == true){
+            // Si estoy una partida
+            //      Envio un mensaje con el numero
+            //      Espero a que me respondan
+            // Si no estoy en una partida
+            //      Leo los mensajes de todos los clientes
 
+            // Estamos en partida
+            // Enviamos numeros
+            // Leemos solo de los clientes de la partida
+            // Consideramos solo los mensajes involucrados en la partida
+            if(inGame){
+                Boolean acabado = false;
+                while(acabado == false){
+                    // Saco la bola del bingo
+                    int bola = bingo.getBola();
+
+                    // Envio la bola a todos los clientes
+                    for(int i = 0; i < ingame_outs.size(); i++){
+                        ingame_outs.get(i).println("300, NUM " + bola);
+                    }
+
+                    // Espero a que todos los clientes me confirmen
+                    for(int i = 0; i < ingame_outs.size(); i++){
+                        String response = ingame_ins.get(i).readLine();
+                        Codop codop = new Codop(response);
+
+                        switch(codop.getCode()){
+                            // Se confirma
+                            // No hay que hacer nada
+                            case 301:
+                            break;
+
+                            // Procesar la victoria
+                            case 302:
+                                // Hemos acabado la partida
+                                acabado = true;
+
+                                // Se notifica a todos los clientes
+                                notify_win();
+                            break;
+
+                            // No se ha recibido
+                            case 430:
+                                procesar_no_recibido();
+                            break;
+
+                            // El codigo recibido no es valido
+                            default:
+                                procesar_no_recibido();
+                            break;
+                        }
+                    }
+                }
+
+            // No estamos en una partida
+            // Leemos de todos los clientes y consideramos todos los mensajes
             }else{
-
+                // Leemos todos los mensajes de los clientes
+                read_from_all();
             }
+
         }
+    }
+
+    // Metodos privados
+    //==========================================================================
+
+    /**
+     * Se leen los mensajes de todos los clientes en una ronda
+     * */
+    private void read_from_all(){
+        for(int i = 0; i < conexiones.size(); i++){
+            // Tomamos el mensaje
+            String response = ins.get(i).readLine();
+            Codop codop = new Codop(response);
+
+            // Procesamos el mensaje
+            process_message(i, codop);
+        }
+    }
+
+    /**
+     * Se procesa un mensaje recibido por un cliente
+     * @param index el indice del cliente que nos manda el mensaje
+     * @param codop el mensaje ya procesado recibido
+     * */
+    private void process_message(int index, Codop codop){
+
     }
 
     // Ejecucion del programa
@@ -168,5 +253,3 @@ public class Servidor{
         server.run();
     }
 }
-            PrintWriter outPrinter = new PrintWriter(socketServicio.getOutputStream(), true);
-            BufferedReader inReader = new BufferedReader(new InputStreamReader(socketServicio.getInputStream()));
