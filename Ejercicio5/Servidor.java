@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.net.SocketTimeoutException;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
 
 
 /**
@@ -77,7 +79,6 @@ public class Servidor{
 
         // Ejecutamos el codigo del servidor iterativo
         this.run();
-
     }
 
     // Metodos publicos
@@ -96,65 +97,8 @@ public class Servidor{
         while(true){
 
             // Intentamos conectar a un nuevo cliente
-            try{
-                // Espero a recibir una conexion
-                Socket current_conexion = socketServidor.accept();
+            connect_new_client();
 
-                // Lo añadimos a nuestras conexiones
-                conexiones.add(current_conexion);
-
-                // Creamos los flujos y los añadimos
-                PrintWriter current_out = new PrintWriter(current_conexion.getOutputStream(), true);
-                BufferedReader current_in = new BufferedReader(new InputStreamReader(current_conexion.getInputStream()));
-                outs.add(current_out);
-                ins.add(current_in);
-
-                // Exigimos que nos envie la peticion de conexion por nuestro protocolo
-                String response = current_in.readLine();
-                Codop codop = new Codop(response);
-
-                if(codop.getCode() != 100){
-                    // Muestro el mensaje
-                    System.err.println("Error, el cliente no nos ha solicitado la conexion");
-                    System.err.println("El usuario se quita de las conexiones");
-
-                    // Envio el mensaje de que no se puede conectar
-                    current_out.println("410, CANNOT CONNECT");
-
-                    // Quito al cliente de las conexiones
-                    conexiones.pop();
-                    outs.pop();
-                    ins.pop();
-                }else{
-                    // Asigno la ID que le corresponde
-                    current_out.println("101, ALLOW + " + current_id);
-                    current_id = current_id + 1;
-
-                    // Esperamos que el cliente confirme la conexion
-                    response = current_in.readLine();
-                    codop = new Codop(response);
-
-                    if(codop.getCode() != 102 || (codop.getCode() == 102 && codop.getArg(1) != Integer.toString(current_id - 1))){
-                        System.err.println("ERROR, el cliente no ha confirmado la conexion correctamente");
-                        System.err.println("El usuario se quita de las conexiones");
-                        
-                        // Envio el mensaje de que no se puede conectar
-                        current_out.println("410, CANNOT CONNECT");
-                        
-                        // Quito al cliente de las conexiones
-                        conexiones.pop();
-                        outs.pop();
-                        ins.pop();
-                    }else{
-                        sysout("Nuevo cliente conectado con exito");
-                    }
-                }
-            }catch(SocketTimeoutException timeout){
-                // No hacemos nada por el timeout
-                // Para que podamos trabajar como un servidor iterativo
-            }catch(Exception e){
-                System.err.println("Error al establecer un nuevo socket con el cliente en Servidor.run()");
-            }
 
             // Si estoy una partida
             //      Envio un mensaje con el numero
@@ -306,6 +250,72 @@ public class Servidor{
             break;
 
         }
+    }
+
+    /**
+     * Intentamos que se conecte un nuevo cliente al servidor
+     * Durante el tiempo establecido por el timeout
+     * */
+    private void connect_new_client(){
+            try{
+                // Espero a recibir una conexion
+                Socket current_conexion = socketServidor.accept();
+
+                // Lo añadimos a nuestras conexiones
+                conexiones.add(current_conexion);
+
+                // Creamos los flujos y los añadimos
+                PrintWriter current_out = new PrintWriter(current_conexion.getOutputStream(), true);
+                BufferedReader current_in = new BufferedReader(new InputStreamReader(current_conexion.getInputStream()));
+                outs.add(current_out);
+                ins.add(current_in);
+
+                // Exigimos que nos envie la peticion de conexion por nuestro protocolo
+                String response = current_in.readLine();
+                Codop codop = new Codop(response);
+
+                if(codop.getCode() != 100){
+                    // Muestro el mensaje
+                    System.err.println("Error, el cliente no nos ha solicitado la conexion");
+                    System.err.println("El usuario se quita de las conexiones");
+
+                    // Envio el mensaje de que no se puede conectar
+                    current_out.println("410, CANNOT CONNECT");
+
+                    // Quito al cliente de las conexiones
+                    conexiones.remove(conexiones.size() - 1);
+                    outs.remove(outs.size() - 1);
+                    ins.remove(ins.size() - 1);
+                }else{
+                    // Asigno la ID que le corresponde
+                    current_out.println("101, ALLOW + " + current_id);
+                    current_id = current_id + 1;
+
+                    // Esperamos que el cliente confirme la conexion
+                    response = current_in.readLine();
+                    codop = new Codop(response);
+
+                    if(codop.getCode() != 102 || (codop.getCode() == 102 && codop.getArg(1) != Integer.toString(current_id - 1))){
+                        System.err.println("ERROR, el cliente no ha confirmado la conexion correctamente");
+                        System.err.println("El usuario se quita de las conexiones");
+                        
+                        // Envio el mensaje de que no se puede conectar
+                        current_out.println("410, CANNOT CONNECT");
+                        
+                        // Quito al cliente de las conexiones
+                        conexiones.remove(conexiones.size() - 1);
+                        outs.remove(outs.size() - 1);
+                        ins.remove(ins.size() - 1);
+                    }else{
+                        sysout("Nuevo cliente conectado con exito");
+                    }
+                }
+            }catch(SocketTimeoutException timeout){
+                // No hacemos nada por el timeout
+                // Para que podamos trabajar como un servidor iterativo
+            }catch(Exception e){
+                System.err.println("Error al establecer un nuevo socket con el cliente en Servidor.run()");
+            }
     }
 
     // Ejecucion del programa
