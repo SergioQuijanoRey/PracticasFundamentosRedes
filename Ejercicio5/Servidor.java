@@ -28,12 +28,14 @@ public class Servidor{
     private ArrayList<BufferedReader> ins;  //> Flujos de entrada
     private ArrayList<PrintWriter> outs;  //> Flujos de entrada
     
-
-
     // Estado del servidor
     Boolean inGame;
     Boolean inStage;
     Integer current_id;
+
+    // Para los clientes que estan en partida, solo guardo los indices de los
+    // arrays en los que tengo almacenada la informacion de su conexion
+    ArrayList<Integer> idx_in_game; //> Indice de cliente en partida
 
     // Constructores
     //==========================================================================
@@ -50,6 +52,9 @@ public class Servidor{
 
         // Se establece el contador de identificadores
         current_id = 0;
+
+        // No hay ids de procesos en partidas
+
 
         // Al inicio no hay conexiones a los clientes ni flujos
         this.conexiones = new ArrayList<Socket>();
@@ -238,7 +243,59 @@ public class Servidor{
      * @param codop el mensaje ya procesado recibido
      * */
     private void process_message(int index, Codop codop){
+        switch(codop.getCode()){
+            // Mensajes validos fuera de una partida
+            //=============================================
+            
+            // El cliente quiere unirse a una partida
+            case 200:
+                if(inStage){
+                    
+                    // Hay hueco, se añade a la partida
+                    if(idx_in_game.size() < num_jugadores){
 
+                        // Se añade a la lista de indices de jugadores
+                        idx_in_game.add(index);
+
+                        // Se le comunica al cliente
+                        outs.get(index).println("201, JOINED");
+
+                        // Comprobamos si hay que iniciar la partida
+                        if(idx_in_game.size() == num_jugadores){
+                            inGame = true;
+                            inStage = false;
+                        }
+
+                    // No hay hueco, se comunica
+                    }else{
+                        outs.get(index).println("420, FULL");
+                    }
+                }else{
+                    // No estamos en stage, se lo comunicamos al cliente
+                    outs.get(index).println("421, NOT IN STAGE");
+                }
+            break;
+            
+            // El cliente quiere desconectarse
+            case 500:
+            break;
+
+            // Mensajes no validos fuera de una partida!
+            //==============================================
+            
+            // El usuario confirma un numero pero no esta en partida
+            case 301:
+            break;
+
+            // El usuario canta bingo pero no esta en partida
+            case 302:
+            break;
+
+            // El servidor no recibe un numero, pero no esta en partida
+            case 430:
+            break;
+
+        }
     }
 
     // Ejecucion del programa
