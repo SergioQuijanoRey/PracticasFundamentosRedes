@@ -225,6 +225,7 @@ public class Servidor{
 
     /**
      * Se leen los mensajes de todos los clientes en una ronda
+     * Esto se hace cuando no se esta en una partida
      * */
     private void read_from_all(){
         for(int i = 0; i < conexiones.size(); i++){
@@ -238,7 +239,7 @@ public class Servidor{
     }
 
     /**
-     * Se procesa un mensaje recibido por un cliente
+     * Se procesa un mensaje recibido por un cliente cuando no se esta en una partida
      * @param index el indice del cliente que nos manda el mensaje
      * @param codop el mensaje ya procesado recibido
      * */
@@ -278,10 +279,19 @@ public class Servidor{
             
             // El cliente quiere desconectarse
             case 500:
+                // Se confirma la desconexion
+                outs.get(index).println("501, BYE");
+                
+                // Se desconecta al cliente
+                conexiones.remove(index);
+                outs.remove(index);
+                ins.remove(index);
             break;
 
             // Mensajes no validos fuera de una partida!
             //==============================================
+
+            // TODO -- Falta procesar esto!
             
             // El usuario confirma un numero pero no esta en partida
             case 301:
