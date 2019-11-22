@@ -275,13 +275,24 @@ public class Servidor{
         // Saco la bola del bingo
         int bola = bingo.getBola();
 
+
         // Envio la bola a todos los clientes
-        for(int i = 0; i < ingame_outs.size(); i++){
-            ingame_outs.get(i).println("300, NUM " + bola);
+        for(Integer current_index : idx_in_game){
+            outs.get(current_index).println("300, NUM " + bola);
+        }
+        
+        // Espero a que todos los clientes me confirmen
+        for(Integer current_index : idx_in_game){
+            String response = ins.get(current_index).readLine();
+            Codop codop = new Codop(response);
+
+
         }
 
         // Espero a que todos los clientes me confirmen
         for(int i = 0; i < ingame_outs.size(); i++){
+
+
             String response = ingame_ins.get(i).readLine();
             Codop codop = new Codop(response);
 
