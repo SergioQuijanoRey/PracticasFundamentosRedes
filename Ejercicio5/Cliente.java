@@ -129,8 +129,11 @@ public class Cliente extends Thread{
 
                 // Se comprueba el mensaje
                 if(codop.getCode() == 202){
-                    for(int i = 0; i < codop.getArgs().size(); i++){
-                        numbers.add(Integer.parseInt(codop.getArgs().get(i)));
+                    System.out.println("#1");
+                    for(int i = 1; i < codop.getArgs().size(); i++){
+                        String current = codop.getArg(i);
+                        System.out.println("Numero " + i + ": " + current);
+                        numbers.add(Integer.parseInt(codop.getArg(i)));
                     }
 
                     // Entramos al juego
@@ -155,6 +158,7 @@ public class Cliente extends Thread{
             }
         } catch(Exception e){
             System.err.println("Error leyendo del socket en Cliente.joinGame()");
+            System.err.println("Codigo del error: " + e);
         }
     }
 
