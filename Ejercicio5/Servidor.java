@@ -185,18 +185,18 @@ public class Servidor{
             // Mensajes no validos fuera de una partida!
             //==============================================
 
-            // TODO -- Falta procesar esto!
-            
             // El usuario confirma un numero pero no esta en partida
             case 301:
-            break;
 
             // El usuario canta bingo pero no esta en partida
             case 302:
-            break;
 
             // El servidor no recibe un numero, pero no esta en partida
             case 430:
+
+                System.err.println("ERROR! El cliente ha enviado un mensaje de partida, pero no estamos en una partida!");
+                System.err.println("No se hace nada al respecto");
+
             break;
 
         }
