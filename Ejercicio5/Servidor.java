@@ -141,6 +141,7 @@ public class Servidor{
      * Se procesa un mensaje recibido por un cliente cuando no se esta en una partida
      * @param index el indice del cliente que nos manda el mensaje
      * @param codop el mensaje ya procesado recibido
+     * TODO -- hay que implementarlo bien!
      * */
     private void process_message(int index, Codop codop){
         switch(codop.getCode()){
@@ -151,28 +152,22 @@ public class Servidor{
             case 200:
                 if(inStage){
                     
-                    // Hay hueco, se añade a la partida
-                    if(idx_in_game.size() < num_jugadores){
+                    // Añadimos al cliente al juego, en caso de que hay hueco
+                    add_client_to_game(index);
 
-                        // Se añade a la lista de indices de jugadores
-                        idx_in_game.add(index);
-
-                        // Se le comunica al cliente
-                        outs.get(index).println("201, JOINED");
-
-                        // Comprobamos si hay que iniciar la partida
-                        if(idx_in_game.size() == num_jugadores){
-                            inGame = true;
-                            inStage = false;
-                        }
-
-                    // No hay hueco, se comunica
-                    }else{
-                        outs.get(index).println("420, FULL");
-                    }
+                // No estamos en stage
                 }else{
-                    // No estamos en stage, se lo comunicamos al cliente
-                    outs.get(index).println("421, NOT IN STAGE");
+                    // Si tenemos suficientes jugadores, iniciamos el stage
+                    if(conexiones.size() >= num_jugadores){
+                        inStage = true;
+                        add_client_to_game(index);
+
+                    // No tenemos suficientes jugadores
+                    // No iniciamos el stage
+                    }else{
+                        // No estamos en stage, se lo comunicamos al cliente
+                        outs.get(index).println("421, NOT IN STAGE");
+                    }   
                 }
             break;
             
@@ -204,6 +199,45 @@ public class Servidor{
             case 430:
             break;
 
+        }
+    }
+
+    /**
+     * En la fase de Stage, se añade un cliente a la partida
+     * @param index el indice del cliente que se añade a la partida
+     *
+     * El cliente solo se añade si hay hueco. Si no hay hueco, se le envia
+     * el mensaje de error oportuno
+     *
+     * Una vez añadido se le envian los numeros
+     * */
+    private void add_client_to_game(int index){
+        if(idx_in_game.size() < num_jugadores){
+            // Se añade a la lista de indices de jugadores
+            idx_in_game.add(index);
+
+            // Se le comunica al cliente
+            outs.get(index).println("201, JOINED");
+
+            // Se genera el mensaje con el carton de 15 numeros
+            Bingo carton = new Bingo(100);
+            String response = "202, NUMBERS ";
+            for(int i = 0; i < 15; i++){
+                response = response + " " + carton.getBola();
+
+            }
+
+            // Se envia el carton
+            outs.get(index).println(response);
+
+            // Comprobamos si hay que iniciar la partida
+            if(idx_in_game.size() == num_jugadores){
+                inGame = true;
+                inStage = false;
+            }
+        }else{
+            // No tenemos hueco, se comunica al cliente
+            outs.get(index).println("420, FULL");
         }
     }
 
