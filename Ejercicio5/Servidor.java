@@ -283,44 +283,48 @@ public class Servidor{
         
         // Espero a que todos los clientes me confirmen
         for(Integer current_index : idx_in_game){
+
+            // Tomamos la respuesta del cliente
             String response = ins.get(current_index).readLine();
             Codop codop = new Codop(response);
 
-
+            // Procesamos la respuesta
+            process_message_in_game(current_index, codop);
         }
 
-        // Espero a que todos los clientes me confirmen
-        for(int i = 0; i < ingame_outs.size(); i++){
+ //        // Espero a que todos los clientes me confirmen
+ //        //
+ //        for(int i = 0; i < ingame_outs.size(); i++){
 
 
-            String response = ingame_ins.get(i).readLine();
-            Codop codop = new Codop(response);
+ //            String response = ingame_ins.get(i).readLine();
+ //            Codop codop = new Codop(response);
 
-            switch(codop.getCode()){
-                // Se confirma
-                // No hay que hacer nada
-                case 301:
-                break;
+ //            switch(codop.getCode()){
+ //                // Se confirma
+ //                // No hay que hacer nada
+ //                case 301:
+ //                break;
 
-                // Procesar la victoria
-                case 302:
-                    // Hemos acabado la partida
-                    acabado = true;
+ //                // Procesar la victoria
+ //                case 302:
+ //                    // Hemos acabado la partida
+ //                    acabado = true;
 
-                    // Se notifica a todos los clientes
-                    notify_win();
-                break;
+ //                    // Se notifica a todos los clientes
+ //                    notify_win();
+ //                break;
 
-                // No se ha recibido
-                case 430:
-                    procesar_no_recibido();
-                break;
+ //                // No se ha recibido
+ //                case 430:
+ //                    procesar_no_recibido();
+ //                break;
 
-                // El codigo recibido no es valido
-                default:
-                    procesar_no_recibido();
-                break;
-            }
+ //                // El codigo recibido no es valido
+ //                default:
+ //                    procesar_no_recibido();
+ //                break;
+ //            }
         
     }
 
