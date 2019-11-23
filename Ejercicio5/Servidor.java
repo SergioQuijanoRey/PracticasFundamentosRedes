@@ -28,7 +28,7 @@ public class Servidor{
     private ArrayList<BufferedReader> ins;  //> Flujos de entrada
     private ArrayList<PrintWriter> outs;  //> Flujos de entrada
     private int port = 8989 ;
-    private static int timeout = 100 * 1000;
+    private static int timeout = 100;
     
     // Estado del servidor
     private Boolean inGame;
