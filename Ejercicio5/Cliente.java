@@ -201,7 +201,7 @@ public class Cliente extends Thread{
 
                     // Comprobamos la respuesta
                     if(codop.getCode() == 304){
-                        Integer winner_id = Integer.parseInt(codop.getArgs().get(0));
+                        Integer winner_id = Integer.parseInt(codop.getArg(1));
 
                         if(winner_id == this.ID){
                             System.out.println("FELICIDADES, HAS GANADO LA PARTIDA");
