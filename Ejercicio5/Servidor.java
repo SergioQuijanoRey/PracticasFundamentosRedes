@@ -199,6 +199,12 @@ public class Servidor{
 
             break;
 
+            // Mensaje desconocido
+            default:
+                System.err.println("ERROR! Mensaje desconocido");
+                System.err.println("No se hace nada la respecto");
+            break;
+
         }
     }
 
