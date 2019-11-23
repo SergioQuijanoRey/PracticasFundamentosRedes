@@ -106,10 +106,9 @@ public class Servidor{
             // Si estamos en una partida, hacemos iteraciones del juego hasta que
             // se acabe el juego
             if(inGame){
-                Boolean acabado = false;
-                while(acabado == false){
+                while(inGame){
                     // Realizamos una iteracion del juego
-                    iteration_of_game(acabado);
+                    iteration_of_game();
                 }
             }else{
                 // Leemos todos los mensajes de los clientes y consideramos todos
@@ -276,12 +275,10 @@ public class Servidor{
 
     /**
      * Se hace una iteracion del juego
-     * @param acabado booleano que controla si se ha acabado el juego
      * */
-    private void iteration_of_game(Boolean acabado){
+    private void iteration_of_game(){
         // Saco la bola del bingo
         int bola = bingo.getBola();
-
 
         // Envio la bola a todos los clientes
         for(Integer current_index : idx_in_game){
