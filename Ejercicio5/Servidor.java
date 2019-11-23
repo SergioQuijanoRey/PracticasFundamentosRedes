@@ -472,7 +472,7 @@ public class Servidor{
      * */
     public static void main(String[] args){
         // Lanzamos el servidor y lo ejecutamos
-        Servidor server = new Servidor(2);
+        Servidor server = new Servidor(1);
         server.run();
     }
 
