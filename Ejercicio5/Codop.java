@@ -154,5 +154,17 @@ public class Codop{
         for(int i = 0; i < codop.getArgs().size(); i++){
             System.out.println("Argumento " + i + ": " + codop.getArgs().get(i));
         }
+
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+
+        // Codop de un BUG
+        //======================================================================
+        codop = new Codop("102, CONNECTED 0");
+        System.out.println("Argumentos:");
+        for(int i = 0; i < codop.getArgs().size(); i++){
+            System.out.println("Argumento " + i + ": " + codop.getArgs().get(i));
+        }
     }
 }

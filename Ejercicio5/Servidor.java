@@ -314,11 +314,11 @@ public class Servidor{
                 current_id = current_id + 1;
 
                 // Esperamos que el cliente confirme la conexion
-                String second_response = current_in.readLine(); // TODO --> BUG nullpointer
+                String second_response = current_in.readLine(); 
                 System.out.println("String recibido: " + second_response);
-                Codop new_codop = new Codop(second_response); // TODO -- BUG nullpointer
+                Codop new_codop = new Codop(second_response); 
 
-                if(new_codop.getCode() != 102 || (new_codop.getCode() == 102 && new_codop.getArg(1) != Integer.toString(current_id - 1))){
+                if(new_codop.getCode() != 102){
                     System.err.println("ERROR, el cliente no ha confirmado la conexion correctamente");
                     System.err.println("El usuario se quita de las conexiones");
                     
@@ -328,7 +328,20 @@ public class Servidor{
                     // Quito al cliente de las conexiones
                     remove_last_connected();
                 }else{
-                    System.out.println("Nuevo cliente conectado con exito");
+
+                    // Se comprueba que la id confirmada sea correcta
+                    Integer given_id = Integer.parseInt(new_codop.getArg(1));
+                    if(given_id != (current_id - 1)){
+                        System.err.println("ERROR, la ID que nos confirma el cliente no es la correcta");
+                        System.err.println("Esperabamos ID " + (current_id - 1) + " y nos ha dado " + new_codop.getArg(1));
+                        System.err.println("El usuario se quita de las conexiones");
+
+                        // Se quit al usuario
+                        remove_last_connected();
+
+                    }else{
+                        System.out.println("Nuevo cliente conectado con exito");
+                    }   
                 }
             }
 
