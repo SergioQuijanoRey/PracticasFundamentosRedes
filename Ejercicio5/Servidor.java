@@ -28,7 +28,7 @@ public class Servidor{
     private ArrayList<BufferedReader> ins;  //> Flujos de entrada
     private ArrayList<PrintWriter> outs;  //> Flujos de entrada
     private int port = 8989 ;
-    private static int timeout = 10000;
+    private static int timeout = 100;
     
     // Estado del servidor
     private Boolean inGame;
@@ -70,7 +70,7 @@ public class Servidor{
 
         // Establecemos que no estamos en una partida
         inGame = false;
-        inStage = false;
+        inStage = true;
 
         // Creamos el socket servidor con un timeout dado
         try{
@@ -136,6 +136,9 @@ public class Servidor{
     private void read_from_all(){
         for(int i = 0; i < conexiones.size(); i++){
             try{
+                // Establecemos un timeout para que no caigamos en interbloqueos
+                conexiones.get(0).setSoTimeout(timeout);
+
                 // Tomamos el mensaje
                 String response = ins.get(i).readLine();
                 Codop codop = new Codop(response);
@@ -453,10 +456,11 @@ public class Servidor{
      * @param index el indice del cliente que canta bingo
      *
      * Se notifica a todos los jugadores sobre quien ha ganado
-     * Se acaba la partida
+     * Se acaba la partida y se pasa a estar en fase de aceptacion
      * */
     private void have_a_winner(int index){
         inGame = false;
+        inStage = true;
 
         for(Integer current_index : idx_in_game){
             outs.get(current_index).println("303, END");
@@ -472,7 +476,7 @@ public class Servidor{
      * */
     public static void main(String[] args){
         // Lanzamos el servidor y lo ejecutamos
-        Servidor server = new Servidor(1);
+        Servidor server = new Servidor(2);
         server.run();
     }
 

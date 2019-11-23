@@ -14,7 +14,7 @@ import java.util.ArrayList;
  *
  * @author Sergio Quijano Rey
  * */
-public class Cliente extends Thread{
+public class Cliente{
     // Atributos de la clase
     //==========================================================================
     // Datos sobre el servidor
@@ -111,6 +111,8 @@ public class Cliente extends Thread{
             System.err.println("No se puede iniciar una partida sin haberse conectado al servidor");
             return;
         }
+
+        System.out.println("Pedimos al servidor entrar a una partida");
 
         // Se envia la solicitud para entrar a una partida
         out.println("200, JOIN " + ID);
