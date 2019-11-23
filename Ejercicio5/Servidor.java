@@ -20,20 +20,22 @@ public class Servidor{
 
     // Atributos de la clase
     //==========================================================================
-    int num_jugadores;  //> Indica cuantos jugadores se necesitan para jugar una partida
-    int port = 8989 ;
-    private static int timeout = 100;
+
 
     // Conexiones
     private ServerSocket socketServidor;     //> Socket del servidor
     private ArrayList<Socket> conexiones;    //> Todos los clientes que tenemos conectados
     private ArrayList<BufferedReader> ins;  //> Flujos de entrada
     private ArrayList<PrintWriter> outs;  //> Flujos de entrada
+    private int port = 8989 ;
+    private static int timeout = 100;
     
     // Estado del servidor
-    Boolean inGame;
-    Boolean inStage;
-    Integer current_id;
+    private Boolean inGame;
+    private Boolean inStage;
+    private Integer current_id;
+    private int num_jugadores;  //> Indica cuantos jugadores se necesitan para jugar una partida
+    private Bingo bingo;
 
     // Para los clientes que estan en partida, solo guardo los indices de los
     // arrays en los que tengo almacenada la informacion de su conexion
@@ -56,11 +58,15 @@ public class Servidor{
         current_id = 0;
 
         // No hay ids de procesos en partidas
+        idx_in_game = new ArrayList<Integer>();
+
+        // Creo un bingo
+        bingo = new Bingo(100);
 
 
         // Al inicio no hay conexiones a los clientes ni flujos
         this.conexiones = new ArrayList<Socket>();
-        ins = new ArrayLis<BufferedReader>();
+        ins = new ArrayList<BufferedReader>();
         outs = new ArrayList<PrintWriter>();
 
         // Establecemos que no estamos en una partida
@@ -94,6 +100,7 @@ public class Servidor{
         while(true){
 
             // Intentamos conectar a un nuevo cliente
+            // El proceso del servidor se bloquea durante un tiempo dado por el timeout
             connect_new_client();
 
             // Si estamos en una partida, hacemos iteraciones del juego hasta que
@@ -289,43 +296,78 @@ public class Servidor{
             Codop codop = new Codop(response);
 
             // Procesamos la respuesta
-            process_message_in_game(current_index, codop);
+            process_message_in_game(current_index, codop, bola);
+        }
+    }
+
+    /**
+     * Se procesa un mensaje recibido por un cliente cuando esta en una partida
+     * @param index el indice del cliente que envia el mensaje
+     * @param codop el mensaje recibido ya procesado
+     * @param bola el ultimo numero que se ha sacado en esta iteracion
+     * */
+    private void process_message_in_game(int index, Codop codop, int bola){
+        switch(codop.getCode()){
+            // El cliente confirma que ha recibido la bola
+            // No se hace nada
+            case 301:
+            break;
+
+            // El cliente confirma que ha ganado
+            case 302:
+                have_a_winner(index);
+            break;
+
+            // El cliente no ha recibido correctamente la bola, hay que volver a mandarla
+            case 430:
+                resend_number(index, bola);
+            break;
+
+            // No hay mas mensajes validos en una iteracion de juego
+            // No se hace nada. Esto puede provocar un bloque de todo el servidor
+            default:
+                System.err.println("El mensaje recibido por el cliente " + index + " no tiene sentido");
+                System.err.println("No se hace nada");
+            break;
         }
 
- //        // Espero a que todos los clientes me confirmen
- //        //
- //        for(int i = 0; i < ingame_outs.size(); i++){
+    }
 
+    /**
+     * El cliente no ha recibido bien el numero, hay que volverlo a enviar hasta
+     * que confirme que lo ha recibido
+     * @param index el indice del cliente
+     * @param bola el numero que se vuelve a enviar
+     * */
+    private void resend_number(int index, int bola){
+        Boolean confirmed = false;
+        while(confirmed == false){
+            outs.get(index).println("300, NUM " + bola);
+            
+            String response = ins.get(index).readLine();
+            Codop codop = new Codop(response);
 
- //            String response = ingame_ins.get(i).readLine();
- //            Codop codop = new Codop(response);
+            // El cliente ha confirmado el numero
+            if(codop.getCode() == 301){
+                confirmed = true;
+            }
+        }
 
- //            switch(codop.getCode()){
- //                // Se confirma
- //                // No hay que hacer nada
- //                case 301:
- //                break;
+    }
 
- //                // Procesar la victoria
- //                case 302:
- //                    // Hemos acabado la partida
- //                    acabado = true;
+    /**
+     * Un cliente ha cantado bingo
+     * @param index el indice del cliente que canta bingo
+     *
+     * Se notifica a todos los jugadores sobre quien ha ganado
+     * Se acaba la partida
+     * */
+    private void have_a_winner(int index){
+        inGame = false;
 
- //                    // Se notifica a todos los clientes
- //                    notify_win();
- //                break;
-
- //                // No se ha recibido
- //                case 430:
- //                    procesar_no_recibido();
- //                break;
-
- //                // El codigo recibido no es valido
- //                default:
- //                    procesar_no_recibido();
- //                break;
- //            }
-        
+        for(Integer current_index : idx_in_game){
+            outs.get(current_index).println("304, WINNER " + index);
+        }
     }
 
     // Ejecucion del programa
