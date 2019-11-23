@@ -129,12 +129,15 @@ public class Cliente extends Thread{
 
                 // Se comprueba el mensaje
                 if(codop.getCode() == 202){
-                    System.out.println("#1");
                     for(int i = 1; i < codop.getArgs().size(); i++){
-                        String current = codop.getArg(i);
-                        System.out.println("Numero " + i + ": " + current);
                         numbers.add(Integer.parseInt(codop.getArg(i)));
                     }
+
+                    System.out.println("Carton de numeros obtenido!");
+                    for(Integer num : numbers){
+                        System.out.print(num + " ");
+                    }
+                    System.out.println("");
 
                     // Entramos al juego
                     inGame = true;
