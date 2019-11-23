@@ -73,12 +73,11 @@ public class Servidor{
         inGame = false;
         inStage = false;
 
-        // Establezco el timeout para aceptar conexiones
-        socketServidor.setSoTimeout(timeout);
 
-        // Creamos el socket servidor
+        // Creamos el socket servidor con un timeout dado
         try{
             socketServidor = new ServerSocket(port);
+            socketServidor.setSoTimeout(timeout);
         }catch(Exception e){
             System.err.println("Error al crear el socket del servidor");
         }
@@ -128,12 +127,16 @@ public class Servidor{
      * */
     private void read_from_all(){
         for(int i = 0; i < conexiones.size(); i++){
-            // Tomamos el mensaje
-            String response = ins.get(i).readLine();
-            Codop codop = new Codop(response);
+            try{
+                // Tomamos el mensaje
+                String response = ins.get(i).readLine();
+                Codop codop = new Codop(response);
+                // Procesamos el mensaje
+                process_message(i, codop);
+            }catch(Exception e){
+                System.err.println("Error leyendo del socket del cliente " + i + " en Servidor.read_from_all()");
+            }
 
-            // Procesamos el mensaje
-            process_message(i, codop);
         }
     }
 
@@ -141,7 +144,6 @@ public class Servidor{
      * Se procesa un mensaje recibido por un cliente cuando no se esta en una partida
      * @param index el indice del cliente que nos manda el mensaje
      * @param codop el mensaje ya procesado recibido
-     * TODO -- hay que implementarlo bien!
      * */
     private void process_message(int index, Codop codop){
         switch(codop.getCode()){
@@ -349,6 +351,7 @@ public class Servidor{
         
         // Espero a que todos los clientes me confirmen
         for(Integer current_index : idx_in_game){
+            try{
 
             // Tomamos la respuesta del cliente
             String response = ins.get(current_index).readLine();
@@ -356,6 +359,9 @@ public class Servidor{
 
             // Procesamos la respuesta
             process_message_in_game(current_index, codop, bola);
+            }catch(Exception e){
+                System.err.println("Error leyendo mensaje del cliente " + current_index + " en Servidor.iteration_of_game()");
+            }
         }
     }
 
@@ -401,6 +407,7 @@ public class Servidor{
     private void resend_number(int index, int bola){
         Boolean confirmed = false;
         while(confirmed == false){
+            try{
             outs.get(index).println("300, NUM " + bola);
             
             String response = ins.get(index).readLine();
@@ -409,6 +416,9 @@ public class Servidor{
             // El cliente ha confirmado el numero
             if(codop.getCode() == 301){
                 confirmed = true;
+            }
+            }catch(Exception e){
+                System.err.println("Error leyendo la confirmacion del cliente " + index + " en Servidor.resend_number()");
             }
         }
 
