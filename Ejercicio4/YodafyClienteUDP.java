@@ -1,11 +1,12 @@
 /**
- * @file YodafyClienteUDP.java
+ * @file YodafyClienteTCP.java
  * @author Sergio Quijano Rey
- * @brief Cliente UDP para el procesador
+ * @brief Cliente TCP para el procesador
  *
  * A partir del codigo de jjramos
  * (CC) jjramos, 2012
  * */
+package a1;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,67 +14,47 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.DatagramPacket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class YodafyClienteUDP {
 
 	public static void main(String[] args) {
 		
-        // Informacion para conectarnos al servidor
+		byte[] buferEnvio;
+		byte[] buferRecepcion= new byte[256];
+		int bytesLeidos = 0;
+
 		String host="localhost"; //> Nombre del host donde se ejecuta el servidor:
 		int port=8989; //> Puerto en el que espera el servidor:
-
-        // Mensaje a enviar y recibir
-		byte []buferEnvio;
-		byte []buferRecepcion=new byte[256];
-		int bytesLeidos=0;
-
-        // Conexion UDP
-        DatagramSocket socket;
-        InetAddress direccion;
-        DatagramPacket paquete;
-        DatagramPacket inPaquete;
+		DatagramSocket socketServicio=null; //> Socket para la conexión TCP
+		DatagramPacket paquete;
+		InetAddress direccion;
 
 		try {
-            // Envio de mensaje
-            //==================================================================
+			socketServicio = new DatagramSocket();
+			direccion = InetAddress.getByName(host);
 
-            // Nos conectamos al servidor
-            socket = new DatagramSocket();
-            direccion = InetAddress.getByName(host);
+			buferEnvio = "Al monte del volcan debes ir sin demora".getBytes();
 
-            // Generamos el mensaje a enviar
-			buferEnvio="Al monte del volcan debes ir sin demora".getBytes();
-			
-            // Generamos el paquete a enviar
-            paquete = new DatagramPacket(buferEnvio, buferEnvio.length, direccion, port);
+			paquete = new DatagramPacket(buferEnvio, buferEnvio.length,direccion, port );
+			socketServicio.send(paquete);
 
-            // Enviamos el paquete por el socket
-            socket.send(paquete);
+			paquete = new DatagramPacket(buferRecepcion, buferRecepcion.length);
+			socketServicio.receive(paquete);
 
-            // Recepcion del mensaje procesado
-            //==================================================================
+			buferRecepcion = paquete.getData();
+			bytesLeidos = paquete.getLength();
 
-            // TODO --> no se si asi se reciben los paquetes
-            inPaquete = new DatagramPacket(buferRecepcion, buferRecepcion.length);
-            socket.receive(paquete);
-            paquete.getData();
+			String recibido = new String(buferRecepcion,0,bytesLeidos);
 
-            // Se muestra un mensaje por pantalla
-			System.out.println("Recibido: ");
-			for(int i=0;i<bytesLeidos;i++){
-				System.out.print((char)buferRecepcion[i]);
-			}
-            System.out.println();
-    
-			// Una vez terminado el servicio, cerramos el socket 
-            socket.close();
-			
-			// Excepciones:
+			System.out.println("Recibido: " + recibido);
+
+
+
 		} catch (UnknownHostException e) {
 			System.err.println("Error: Nombre de host no encontrado.");
 		} catch (IOException e) {
