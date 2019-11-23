@@ -83,9 +83,6 @@ public class Servidor{
         // Mensajes de informacion
         System.out.println("=== Servidor inicializado correctamente!");
         System.out.println("=== Se pasa a ejecutar el bucle infinito");
-
-        // Ejecutamos el codigo del servidor iterativo
-        this.run();
     }
 
     // Metodos publicos
@@ -100,9 +97,11 @@ public class Servidor{
     public void run(){
         while(true){
             System.out.println("=== Se espera a una conexion");
+
             // Intentamos conectar a un nuevo cliente
             // El proceso del servidor se bloquea durante un tiempo dado por el timeout
             connect_new_client();
+
             System.out.println("=== Se termina de esperar a una conexion");
 
             // Si estamos en una partida, hacemos iteraciones del juego hasta que
@@ -117,12 +116,13 @@ public class Servidor{
                 }
             }else{
                 System.out.println("=== Se hace una ronda de leer los mensajes de todos los clientes");
+
                 // Leemos todos los mensajes de los clientes y consideramos todos
                 // los posibles mensajes de esta fase
                 read_from_all();
+
                 System.out.println("=== Se termina de hacer una ronda de lectura de todos los clientes");
             }
-
         }
     }
 
