@@ -188,7 +188,7 @@ public class Cliente extends Thread{
                 
                 if(codop.getCode() == 300){ // Se recibe un numero
                     // Se toma el numero que nos han dado
-                    Integer current_number = Integer.parseInt(codop.getArgs().get(0));
+                    Integer current_number = Integer.parseInt(codop.getArg(1));
 
                     // Se procesa el numero
                     processIncomingNumber(current_number, numbers);
@@ -248,6 +248,7 @@ public class Cliente extends Thread{
             inGame = false;
         }catch(Exception e){
             System.err.println("Error en las comunicaciones de Cliente.joinGame()");
+            System.err.println("Codigo del error: " + e);
         }
     }
     
