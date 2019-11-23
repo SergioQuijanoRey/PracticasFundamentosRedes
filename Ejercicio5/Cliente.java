@@ -306,6 +306,8 @@ public class Cliente{
         cliente.connectToServer();
 
         // Intentamos echar una partida
-        cliente.joinGame();
+        while(true){
+            cliente.joinGame();
+        }   
     }
 }

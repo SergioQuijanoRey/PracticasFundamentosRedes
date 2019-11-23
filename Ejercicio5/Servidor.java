@@ -10,6 +10,7 @@ import java.net.SocketTimeoutException;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
+import java.lang.System;
 
 
 /**
@@ -144,8 +145,12 @@ public class Servidor{
                 Codop codop = new Codop(response);
                 // Procesamos el mensaje
                 process_message(i, codop);
+            }catch(SocketTimeoutException s){
+                // No se hace nada
+                System.err.println("Se pasa el tiempo en Servidor.read_from_all()");
             }catch(Exception e){
                 System.err.println("Error leyendo del socket del cliente " + i + " en Servidor.read_from_all()");
+                System.err.println("Codigo de error: " + e);
             }
 
         }
