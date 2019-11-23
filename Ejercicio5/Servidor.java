@@ -419,6 +419,7 @@ public class Servidor{
         inGame = false;
 
         for(Integer current_index : idx_in_game){
+            outs.get(current_index).println("303, END");
             outs.get(current_index).println("304, WINNER " + index);
         }
     }
