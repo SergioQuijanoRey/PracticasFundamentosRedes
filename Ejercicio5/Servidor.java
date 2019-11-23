@@ -28,7 +28,7 @@ public class Servidor{
     private ArrayList<BufferedReader> ins;  //> Flujos de entrada
     private ArrayList<PrintWriter> outs;  //> Flujos de entrada
     private int port = 8989 ;
-    private static int timeout = 100;
+    private static int timeout = 10000;
     
     // Estado del servidor
     private Boolean inGame;
@@ -273,6 +273,7 @@ public class Servidor{
             }catch(SocketTimeoutException timeout){
                 // No hacemos nada por el timeout
                 // Para que podamos trabajar como un servidor iterativo
+                System.err.println("Se pasa el tiempo de espera para aceptar un nuevo cliente");
             }catch(Exception e){
                 System.err.println("Error al establecer un nuevo socket con el cliente en Servidor.run()");
             }
@@ -309,14 +310,15 @@ public class Servidor{
                 remove_last_connected();
             }else{
                 // Asigno la ID que le corresponde
-                current_out.println("101, ALLOW + " + current_id);
+                current_out.println("101, ALLOW " + current_id);
                 current_id = current_id + 1;
 
                 // Esperamos que el cliente confirme la conexion
-                response = current_in.readLine();
-                codop = new Codop(response);
+                String second_response = current_in.readLine(); // TODO --> BUG nullpointer
+                System.out.println("String recibido: " + second_response);
+                Codop new_codop = new Codop(second_response); // TODO -- BUG nullpointer
 
-                if(codop.getCode() != 102 || (codop.getCode() == 102 && codop.getArg(1) != Integer.toString(current_id - 1))){
+                if(new_codop.getCode() != 102 || (new_codop.getCode() == 102 && new_codop.getArg(1) != Integer.toString(current_id - 1))){
                     System.err.println("ERROR, el cliente no ha confirmado la conexion correctamente");
                     System.err.println("El usuario se quita de las conexiones");
                     
@@ -332,6 +334,7 @@ public class Servidor{
 
         }catch(Exception e){
             System.err.println("Error procesando una nueva conexion al servidor");
+            System.err.println("Codigo error: " + e);
         }
     }
 

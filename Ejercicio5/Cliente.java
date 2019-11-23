@@ -43,11 +43,13 @@ public class Cliente extends Thread{
 
         // Conseguimos los flujos de entrada salida
         try{
-            PrintWriter out = new PrintWriter(servidor.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(servidor.getInputStream()));
+            out = new PrintWriter(servidor.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(servidor.getInputStream()));
         } catch(Exception e){
             System.err.println("Error intentando tomar los flujos desde el cliente");
         }
+
+        System.out.println("Cliente inicializado con exito!");
     }
 
     // Metodos Publicos
@@ -59,11 +61,16 @@ public class Cliente extends Thread{
         // Se envia la solicitud
         out.println("100, CONNECT");
 
+        String response;
+        Codop codop;
         // Se toma la recepcion
         try{
             // Se lee el mensaje y se procesa
-            String response = in.readLine();
-            Codop codop = new Codop(response);
+            response = in.readLine();
+            codop = new Codop(response);
+
+            System.out.println("Respuesta recibida: " + response);
+        
 
             if(codop.getCode() == 101){ // Se admite la conexion
                 // Tomamos el id dado por el servidor
@@ -88,8 +95,9 @@ public class Cliente extends Thread{
             }
 
         }catch(Exception e){
-            System.err.println("Error leyendo la respuesta del servidor en Cliente.connectToBingoServer()");
+            System.err.println("Error recibiendo un mensaje del servidor en Cliente.connectToBingoServer()");
         }
+
     }
 
     /**
