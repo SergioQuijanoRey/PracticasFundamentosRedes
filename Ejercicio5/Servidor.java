@@ -63,7 +63,6 @@ public class Servidor{
         // Creo un bingo
         bingo = new Bingo(100);
 
-
         // Al inicio no hay conexiones a los clientes ni flujos
         this.conexiones = new ArrayList<Socket>();
         ins = new ArrayList<BufferedReader>();
@@ -72,6 +71,8 @@ public class Servidor{
         // Establecemos que no estamos en una partida
         inGame = false;
         inStage = false;
+
+        System.out.println("#2");
 
 
         // Creamos el socket servidor con un timeout dado
@@ -82,8 +83,14 @@ public class Servidor{
             System.err.println("Error al crear el socket del servidor");
         }
 
+        // Mensajes de informacion
+        System.out.println("Servidor inicializado correctamente!");
+        System.out.println("Se pasa a ejecutar el bucle infinito");
+
         // Ejecutamos el codigo del servidor iterativo
         this.run();
+
+        System.out.println("Servidor inicializado correctamente!");
     }
 
     // Metodos publicos
