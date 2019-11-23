@@ -306,8 +306,10 @@ public class Cliente{
         cliente.connectToServer();
 
         // Intentamos echar una partida
-        while(true){
-            cliente.joinGame();
-        }   
+        cliente.joinGame();
+
+        // Mensajes finales
+        System.out.println("GRACIAS POR JUGAR A NUESTRO BINGO!!!");
+        System.out.println("ESPERAMOS VERLE PRONTO :D");
     }
 }

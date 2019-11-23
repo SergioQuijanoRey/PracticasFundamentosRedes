@@ -384,13 +384,19 @@ public class Servidor{
         // Espero a que todos los clientes me confirmen
         for(Integer current_index : idx_in_game){
             try{
+                
+                // Establecemos un timeout para que no caigamos en interbloqueos
+                conexiones.get(current_index).setSoTimeout(timeout);
 
-            // Tomamos la respuesta del cliente
-            String response = ins.get(current_index).readLine();
-            Codop codop = new Codop(response);
+                // Tomamos la respuesta del cliente
+                String response = ins.get(current_index).readLine();
+                Codop codop = new Codop(response);
 
-            // Procesamos la respuesta
-            process_message_in_game(current_index, codop, bola);
+                // Procesamos la respuesta
+                process_message_in_game(current_index, codop, bola);
+
+            }catch(SocketTimeoutException s){
+                System.err.println("Tiempo de espera agotado en Servidor.iteration_of_game()");
             }catch(Exception e){
                 System.err.println("Error leyendo mensaje del cliente " + current_index + " en Servidor.iteration_of_game()");
             }
